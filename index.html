@@ -1,0 +1,1364 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="referrer" content="no-referrer">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#EDF0EF" media="(prefers-color-scheme:light)">
+<meta name="theme-color" content="#0D1514" media="(prefers-color-scheme:dark)">
+<style>img{max-width:100%}[hidden]{display:none!important}</style>
+<title>No Interpreter</title>
+<link rel="stylesheet" media="print" onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{
+  --bg:#EDF0EF; --surface:#FFFFFF; --surface-2:#F4F7F6; --raise:#FBFCFC;
+  --ink:#14201E; --ink-2:#33433F; --muted:#657572; --faint:#8B9A97;
+  --line:#D6DDDB; --line-strong:#B9C4C1;
+  --accent:#0E6E67; --accent-soft:#DCEBE9; --accent-ink:#FFFFFF;
+  --signal:#A85D18; --signal-soft:#F6E8D6;
+  --flag:#9E2B3E; --flag-soft:#F7E3E6;
+  --ok:#356F45; --ok-soft:#E1EFE4;
+  --shadow:0 1px 2px rgba(20,32,30,.06), 0 8px 24px -12px rgba(20,32,30,.18);
+  --sans:"IBM Plex Sans","IBM Plex Sans KR","Noto Sans KR","Noto Sans CJK KR",system-ui,-apple-system,"Malgun Gothic",sans-serif;
+  --serif:"IBM Plex Serif","Noto Serif KR","IBM Plex Sans KR","Noto Sans KR",Georgia,serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1514; --surface:#161F1D; --surface-2:#1C2725; --raise:#212D2A;
+    --ink:#E4EBE9; --ink-2:#C2CECB; --muted:#8FA09C; --faint:#6E7F7B;
+    --line:#2A3735; --line-strong:#3B4B48;
+    --accent:#54BFB1; --accent-soft:#123330; --accent-ink:#06211E;
+    --signal:#E0973F; --signal-soft:#33240F;
+    --flag:#E4788A; --flag-soft:#341A1F;
+    --ok:#77BE86; --ok-soft:#152B1B;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1514; --surface:#161F1D; --surface-2:#1C2725; --raise:#212D2A;
+  --ink:#E4EBE9; --ink-2:#C2CECB; --muted:#8FA09C; --faint:#6E7F7B;
+  --line:#2A3735; --line-strong:#3B4B48;
+  --accent:#54BFB1; --accent-soft:#123330; --accent-ink:#06211E;
+  --signal:#E0973F; --signal-soft:#33240F;
+  --flag:#E4788A; --flag-soft:#341A1F;
+  --ok:#77BE86; --ok-soft:#152B1B;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;-webkit-text-size-adjust:100%}
+#app{max-width:460px;margin:0 auto;padding:0 16px 132px 16px}
+h1,h2,h3{margin:0;text-wrap:balance;font-weight:600;letter-spacing:-.01em}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;text-align:left}
+button:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+textarea,select{font:inherit;color:var(--ink);background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;width:100%}
+textarea{resize:vertical;min-height:92px;line-height:1.5}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+.topbar{position:sticky;top:0;z-index:20;background:linear-gradient(var(--bg) 74%,transparent);padding:14px 0 10px;display:flex;align-items:baseline;gap:10px}
+.brand{font-family:var(--serif);font-size:19px;font-weight:600;letter-spacing:-.02em}
+.brand em{font-style:italic;color:var(--accent)}
+.brand-sub{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);margin-left:auto}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
+.stack{display:flex;flex-direction:column;gap:14px}
+.stack-s{display:flex;flex-direction:column;gap:8px}
+.row{display:flex;gap:8px;align-items:center}
+.row-wrap{display:flex;gap:8px;flex-wrap:wrap}
+.eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.hint{font-size:12.5px;color:var(--muted);line-height:1.5}
+.ko{font-size:13.5px;color:var(--ink-2);line-height:1.65}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:0 15px;border-radius:var(--r);border:1px solid var(--line-strong);background:var(--surface);font-size:14.5px;font-weight:500;text-align:center}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.btn.wide{width:100%}
+.btn.big{min-height:54px;font-size:16px}
+.btn.quiet{border-color:transparent;background:var(--surface-2);color:var(--ink-2)}
+.btn.ghost{border-color:transparent;background:none;color:var(--muted);font-size:13px;min-height:38px;padding:0 8px;justify-content:center}
+.btn[disabled]{opacity:.42;pointer-events:none}
+.btn.listening{background:var(--signal);border-color:var(--signal);color:#fff}
+.btn.rec{background:var(--flag);border-color:var(--flag);color:#fff}
+
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line-strong);border-radius:999px;padding:7px 13px;font-size:13.5px;min-height:38px;display:inline-flex;align-items:center;background:var(--surface)}
+.chip[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+
+.hero{padding:16px 0 2px}
+.hero h1{font-family:var(--serif);font-size:26px;line-height:1.28;letter-spacing:-.025em}
+.hero p{margin-top:8px;font-size:13.5px;color:var(--muted);max-width:34ch}
+.stat-strip{display:flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--surface)}
+.stat{flex:1;padding:11px 12px;border-right:1px solid var(--line)}
+.stat:last-child{border-right:0}
+.stat b{display:block;font-family:var(--mono);font-size:19px;font-weight:500;line-height:1.25}
+.stat span{font-size:11px;color:var(--muted)}
+.plan{border-left:2px solid var(--accent);padding-left:12px;display:flex;flex-direction:column;gap:7px}
+.plan-row{display:flex;gap:9px;align-items:baseline;font-size:13px}
+.plan-row i{font-family:var(--mono);font-size:11px;color:var(--faint);font-style:normal;min-width:14px}
+.plan-row b{font-weight:500}
+.plan-row span{color:var(--muted);font-size:12.5px}
+
+.drill-head{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.tag{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:3px 7px;border-radius:4px;background:var(--accent-soft);color:var(--accent)}
+.tag.listen{background:var(--signal-soft);color:var(--signal)}
+.stream{font-size:11.5px;color:var(--faint);margin-left:auto;text-align:right}
+.speaker{display:flex;gap:10px;align-items:center;padding:10px 12px;background:var(--surface-2);border-radius:var(--r);margin-bottom:12px}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-weight:600;font-size:13px;flex:none}
+.speaker-name{font-size:13.5px;font-weight:500;line-height:1.3}
+.speaker-role{font-size:11.5px;color:var(--muted);line-height:1.3}
+.wave{margin-left:auto;display:flex;gap:2px;align-items:flex-end;height:16px}
+.wave i{width:3px;background:var(--line-strong);border-radius:2px;height:4px;display:block}
+.speaking .wave i{background:var(--signal);animation:w .6s ease-in-out infinite alternate}
+.speaking .wave i:nth-child(2){animation-delay:.12s}
+.speaking .wave i:nth-child(3){animation-delay:.24s}
+.speaking .wave i:nth-child(4){animation-delay:.06s}
+@keyframes w{from{height:4px}to{height:16px}}
+@media (prefers-reduced-motion:reduce){.speaking .wave i{animation:none;height:11px}}
+.prompt-en{font-family:var(--serif);font-size:17.5px;line-height:1.5;letter-spacing:-.005em}
+.prompt-hidden{filter:blur(6px);user-select:none;opacity:.5}
+.task{font-size:13.5px;color:var(--ink-2);background:var(--surface-2);border-radius:var(--r);padding:10px 12px}
+.replays{font-family:var(--mono);font-size:11px;color:var(--faint)}
+
+.fb{border-radius:var(--r);padding:12px;font-size:13.5px;line-height:1.6}
+.fb.ok{background:var(--ok-soft);color:var(--ok)}
+.fb.warn{background:var(--flag-soft);color:var(--flag)}
+.score{font-family:var(--mono);font-size:25px;font-weight:500;line-height:1}
+.diff .miss{background:var(--flag-soft);color:var(--flag);border-bottom:2px solid var(--flag);border-radius:2px;padding:0 1px;font-weight:600}
+.fix{display:flex;gap:8px;align-items:baseline;font-size:13px;padding:6px 0;border-bottom:1px solid var(--line)}
+.fix:last-child{border-bottom:0}
+.fix s{color:var(--flag);opacity:.9}
+.fix b{color:var(--ok);font-weight:600}
+.model{font-family:var(--serif);font-size:15.5px;line-height:1.62;color:var(--ink)}
+.bullets{margin:0;padding-left:18px;font-size:13.5px;line-height:1.65;color:var(--ink-2)}
+.bullets li{margin-bottom:4px}
+
+.turns{display:flex;flex-direction:column;gap:10px;max-height:42vh;overflow-y:auto;padding-right:2px}
+.bub{padding:10px 12px;border-radius:12px;font-size:14px;line-height:1.5;max-width:88%}
+.bub.them{background:var(--surface-2);border:1px solid var(--line);border-bottom-left-radius:3px;align-self:flex-start;font-family:var(--serif)}
+.bub.me{background:var(--accent-soft);color:var(--accent);border-bottom-right-radius:3px;align-self:flex-end}
+.bub.sys{align-self:center;font-size:12px;color:var(--muted);background:none;padding:2px;text-align:center}
+
+.situation{font-size:15px;font-weight:500;line-height:1.5}
+.phrase{font-family:var(--serif);font-size:18px;line-height:1.45}
+.phrase-item{display:flex;gap:9px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--line);font-family:var(--serif);font-size:15px;line-height:1.45}
+.phrase-item:last-child{border-bottom:0}
+.phrase-item button{flex:none;color:var(--accent);font-size:16px;line-height:1;min-width:22px}
+
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+.dock-in{max-width:460px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.clock{font-family:var(--mono);font-size:20px;font-weight:500;letter-spacing:-.02em;line-height:1}
+.clock small{font-size:11px;color:var(--muted);letter-spacing:0;font-weight:400}
+.bar{height:3px;background:var(--line);border-radius:2px;overflow:hidden;margin-top:6px;width:110px}
+.bar i{display:block;height:100%;background:var(--accent);width:0}
+.bar.over i{background:var(--signal)}
+
+.note-item{padding:10px 0;border-bottom:1px solid var(--line)}
+.note-item:last-child{border-bottom:0}
+.note-en{font-family:var(--serif);font-size:14.5px;line-height:1.5}
+.note-meta{font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.05em;text-transform:uppercase;margin-bottom:3px}
+.banner{background:var(--signal-soft);color:var(--signal);border-radius:var(--r);padding:12px;font-size:13.5px;line-height:1.55}
+.center{text-align:center}
+[hidden]{display:none!important}
+</style>
+
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <span class="brand">No <em>Interpreter</em></span>
+    <span class="brand-sub" id="topSub">Clinical Affairs &middot; EN</span>
+  </div>
+
+  <!-- ══ SETUP ══════════════════════════════ -->
+  <section id="setup" class="stack">
+    <div class="hero">
+      <h1>통역 없이<br>미팅에 들어가기 위한 연습</h1>
+      <p>CER · PMCF · NB 심사 대응 현장에서 실제로 오가는 문장으로, 듣기부터 훈련합니다.</p>
+    </div>
+
+    <div class="stat-strip" id="stats">
+      <div class="stat"><b class="mono" id="stTotal">0</b><span>누적 연습(분)</span></div>
+      <div class="stat"><b class="mono" id="stSessions">0</b><span>세션</span></div>
+      <div class="stat"><b class="mono" id="stStreak">0</b><span>연속 일수</span></div>
+    </div>
+
+    <div class="card stack-s">
+      <div class="eyebrow">오늘 목표 시간</div>
+      <div class="chips" id="durChips"></div>
+      <p class="hint" id="durHint">시간이 다 돼도 자동으로 끝나지 않습니다. 종료 버튼을 누를 때까지 계속 이어집니다.</p>
+    </div>
+
+    <div class="card stack-s">
+      <div class="eyebrow">집중 영역</div>
+      <div class="chips" id="focusChips"></div>
+      <p class="hint" id="focusHint"></p>
+    </div>
+
+    <div class="card stack-s">
+      <div class="eyebrow">상대의 말하기 속도</div>
+      <div class="chips" id="rateChips"></div>
+      <div class="row" style="margin-top:4px">
+        <select id="voiceSel" aria-label="상대 목소리"></select>
+        <button class="btn quiet" id="testVoice" style="flex:none">들어보기</button>
+      </div>
+      <p class="hint" id="voiceHint">기기에 설치된 영어 목소리를 씁니다. 자동 회전으로 두면 드릴마다 다른 억양이 나옵니다.</p>
+    </div>
+
+    <div class="card stack-s">
+      <div class="eyebrow">오늘 세션 구성</div>
+      <div class="plan" id="planPreview"></div>
+    </div>
+
+    <button class="btn primary big wide" id="startBtn">세션 시작</button>
+    <button class="btn ghost" id="notesBtn">복습 노트 열기</button>
+    <button class="btn ghost" id="installBtn" hidden>홈 화면에 앱으로 설치</button>
+    <p class="hint center" id="aiState">연결 확인 중…</p>
+    <p class="hint center" id="storeState" hidden></p>
+
+    <div class="card stack-s" id="partnerCard" hidden>
+      <div class="eyebrow">대화 상대는 Claude 앱에서</div>
+      <p class="ko">이 파일에는 실시간 AI 교정이 없습니다. 아래 프롬프트를 <b>Claude 앱</b>에 붙여넣고 <b>음성 모드</b>로 켜면, 실제 미팅처럼 소리로 듣고 소리로 답하는 연습이 됩니다. 듣기 드릴은 이 앱에서, 대화는 Claude 앱에서 하는 조합입니다.</p>
+      <textarea id="partnerPrompt" readonly rows="7" style="font-size:11.5px;line-height:1.45"></textarea>
+      <div class="row-wrap"><button class="btn quiet" id="copyPrompt">프롬프트 복사</button></div>
+    </div>
+  </section>
+
+  <!-- ══ SESSION ════════════════════════════ -->
+  <section id="session" hidden class="stack">
+    <div id="banner" hidden></div>
+    <div id="stage"></div>
+  </section>
+
+  <!-- ══ DEBRIEF ════════════════════════════ -->
+  <section id="debrief" hidden class="stack"></section>
+
+  <!-- ══ NOTES ══════════════════════════════ -->
+  <section id="notes" hidden class="stack"></section>
+</div>
+
+<div class="dock" id="dock" hidden>
+  <div class="dock-in">
+    <div>
+      <div class="clock" id="clock">00:00 <small id="clockTarget"></small></div>
+      <div class="bar" id="bar"><i></i></div>
+    </div>
+    <button class="btn quiet" id="plus10" style="margin-left:auto">+10분</button>
+    <button class="btn" id="endBtn">종료</button>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   CONTENT BANK
+   내용은 사용자의 실제 업무 범위(CER/PMCF/MDR, 에너지 기반 미용·의료기기)에서만 가져왔다.
+   기기 사실과 규정 짝은 임의로 만들지 않았다.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── 1. 받아쓰기: 회의에서 실제로 들릴 문장 ───────────────── */
+const DICTATION = [
+ {en:"The notified body raised a finding on the performance and safety claims, so we need to revise that section before we resubmit.", ko:"NB가 performance·safety claims 항목에 finding을 냈다는 뜻입니다.", st:"NB Finding"},
+ {en:"Under Article 61(9), for Annex XVI devices we have to demonstrate performance rather than clinical benefit.", ko:"Annex XVI 기기는 clinical benefit이 아니라 performance를 입증합니다.", st:"CER"},
+ {en:"We set the acceptance criteria as Grade 1 to 2 events only, with an incidence cap and a defined denominator.", ko:"severity-anchored acceptance criteria를 설명하는 문장입니다.", st:"CER"},
+ {en:"The PMCF plan follows MDCG 2020-7, and the evaluation report follows MDCG 2020-8.", ko:"PMCF Plan과 PMCF Evaluation Report의 근거 문서입니다.", st:"PMCF"},
+ {en:"Could you clarify whether that comment applies to the EU version of the report or the parallel version for the other legal entity?", ko:"법인별 병행 문서 중 어느 쪽인지 확인하는 질문입니다.", st:"NB Finding"},
+ {en:"State of the art is defined by the indication, not by the device technology.", ko:"SOTA의 축은 기술이 아니라 적응증이라는 원칙입니다.", st:"Literature"},
+ {en:"We cannot claim equivalence here, because there is no certified device whose technical documentation we could access.", ko:"동등성 루트를 쓸 수 없는 이유를 설명합니다.", st:"CER"},
+ {en:"The literature search was run in PubMed and Embase, and the protocol is documented in the appendix.", ko:"문헌검색 프로토콜의 위치를 말합니다.", st:"Literature"},
+ {en:"I would like to walk you through the benefit-risk determination first, and then take questions on the residual risks.", ko:"회의 진행 순서를 제안하는 표현입니다.", st:"Meeting"},
+ {en:"If the incidence exceeds the threshold, that triggers a risk management and benefit-risk review.", ko:"acceptance criteria 초과 시의 조치를 말합니다.", st:"CER"},
+ {en:"We are planning an online survey with about ten respondents as a specific PMCF activity.", ko:"KOL 설문을 specific PMCF activity로 정당화하는 문장입니다.", st:"PMCF"},
+ {en:"Let me share my screen so that we can look at the acceptance criteria table together.", ko:"화면 공유를 제안하는 표현입니다.", st:"Meeting"},
+ {en:"The citation numbers in the body text do not match the reference list, so I will re-run the cross-check.", ko:"인용 번호와 Reference 목록 불일치를 지적합니다.", st:"CER"},
+ {en:"Can we push the deadline by one week? The approver still has to review and sign off.", ko:"일정 연기를 요청하는 표현입니다.", st:"Meeting"},
+ {en:"Sorry, you cut out for a second. Could you repeat the part about the search period justification?", ko:"못 들었을 때 되묻는 핵심 표현입니다.", st:"Meeting"},
+ {en:"For the state-of-the-art track, the search runs from the clinical introduction of the technology up to the search date.", ko:"SOTA 트랙 검색기간 설정 근거입니다.", st:"Literature"},
+ {en:"Medical alternatives are a sub-component of state of the art, so we report them in one integrated section.", ko:"MA는 SOTA의 하위 구성요소라는 원칙입니다.", st:"Literature"},
+ {en:"The adverse event terms have to come from the final list, so redness becomes erythema and swelling becomes edema.", ko:"AE 용어 통제 규칙입니다.", st:"CER"},
+ {en:"This device is a picosecond alexandrite laser, so please do not describe it as a Q-switched laser.", ko:"기기 기술 특성을 정정하는 문장입니다.", st:"CER"},
+ {en:"This device is a fractional carbon dioxide laser, and it is classified as Class IIb under the regulation.", ko:"프랙셔널 CO2 레이저의 기술과 등급을 설명합니다.", st:"CER"},
+ {en:"We will document that in the next revision and flag it in the change history.", ko:"개정 반영을 약속하는 표현입니다.", st:"NB Finding"},
+ {en:"My understanding is that the requirement applies to the clinical evaluation, not to the risk management file.", ko:"부드럽게 이견을 제시하는 표현입니다.", st:"Meeting"},
+ {en:"Before we move on, I have one point on the post-market surveillance section.", ko:"발언권을 가져오는 표현입니다.", st:"Meeting"},
+ {en:"The survey covers four domains: clinical performance, clinical safety, usability, and off-label use.", ko:"PMCF 설문 도메인 4가지입니다.", st:"PMCF"},
+ {en:"We reviewed the complaint data and the vigilance reports, and there was no new type of adverse event.", ko:"PMS 데이터 검토 결과를 보고합니다.", st:"PMCF"}
+];
+
+/* ── 2. 세부 청취: 숫자·조항·문서번호 잡아내기 ─────────────── */
+const DETAIL = [
+ {say:"That point is addressed in Section 3.24 of the report, and the underlying requirement is Annex XIV.", ask:"섹션 번호와 Annex는?", ans:"Section 3.24 / Annex XIV"},
+ {say:"Please follow MDCG 2020-7 for the plan and MDCG 2020-8 for the evaluation report.", ask:"각각 어떤 MDCG 번호인가요?", ans:"Plan = MDCG 2020-7 / Report = MDCG 2020-8"},
+ {say:"The methodology reference is MEDDEV 2.7/1 Revision 4, Appendix A5.", ask:"문서 번호와 개정판, 부록은?", ans:"MEDDEV 2.7/1 Rev.4, Appendix A5"},
+ {say:"The search period for medical alternatives is the last fifteen years, so from January 2011 onwards.", ask:"검색기간은 몇 년이고 언제부터인가요?", ans:"15 years / from January 2011"},
+ {say:"We are expecting about ten respondents, and the survey runs for six weeks.", ask:"응답자 수와 기간은?", ans:"10 respondents / 6 weeks"},
+ {say:"Equivalence is covered by MDCG 2020-5, and for Annex XVI devices by MDCG 2023-6.", ask:"동등성 관련 두 MDCG 번호는?", ans:"MDCG 2020-5 / MDCG 2023-6"},
+ {say:"That is Article 61(9), not 61(3). Please correct the citation in the next revision.", ask:"맞는 조항과 틀린 조항은?", ans:"correct 61(9) / wrong 61(3)"},
+ {say:"Grade 1 to 2 is acceptable, but anything at Grade 3 or above is not.", ask:"허용 등급과 불허 등급은?", ans:"Grade 1-2 acceptable / Grade 3 or above not"},
+ {say:"The device operates at 1550 nanometres, and the fractional carbon dioxide system operates at 10.6 micrometres.", ask:"두 파장은?", ans:"1550 nm / 10.6 micrometres"},
+ {say:"We need this back by Thursday the fourteenth, because the review board meets on the eighteenth.", ask:"마감일과 심의일은?", ans:"Thursday the 14th / board meets on the 18th"},
+ {say:"Qualification and classification of Annex XVI devices is covered in MDCG 2023-5.", ask:"어떤 MDCG 번호인가요?", ans:"MDCG 2023-5"},
+ {say:"The common specification is Commission Implementing Regulation 2022/2346, and Group 5 is Annex VI.", ask:"규정 번호와 Group 5의 Annex는?", ans:"2022/2346 / Annex VI"}
+];
+
+/* ── 3. 듣고 답하기: NB·동료가 실제로 던지는 질문 ──────────── */
+const QA = [
+ {q:"Walk me through how you justified the search period for the state-of-the-art track.",
+  ko:"SOTA 트랙 검색기간을 어떻게 정당화했는지 설명하세요.",
+  model:"There is no fixed rule on search periods, so we set one per track and justify each one. The methodology guidance asks for start and end dates for every search. For the state-of-the-art track we start from the clinical introduction of the technology and run up to the search date, so the full lifecycle of that treatment option is covered. For medical alternatives we use the last fifteen years, because there we only need current practice. Both periods and their rationale are recorded in the search protocol."},
+ {q:"Why does this project use a clinical investigation instead of the equivalence route?",
+  ko:"왜 동등성 대신 임상시험을 수행하는지 설명하세요.",
+  model:"Because the equivalence route is not available to us. Almost no Annex XVI device has been certified under the regulation, so there is no device we could demonstrate the three elements of equivalence against, and we could not obtain the contractual access to technical documentation that the regulation requires. So we generate the clinical evidence directly, through a clinical investigation on the subject device. Similar devices are used only as state-of-the-art and safety references, and we do not claim equivalence to them."},
+ {q:"How did you set the acceptance criteria for adverse events, and what happens if they are exceeded?",
+  ko:"AE acceptance criteria 설정 방식과 초과 시 조치를 설명하세요.",
+  model:"The criteria are severity-anchored rather than a single probability limit. For each adverse event we define the severity grade, an incidence cap, and the denominator the incidence is calculated on. Grade 1 to 2 events are acceptable, and Grade 3 or above is not. The thresholds are derived from the state of the art, because the regulation requires the acceptability parameters to be based on the state of the art in medicine. If a threshold is exceeded, it triggers a risk management review, a post-market surveillance review, and a re-assessment of the benefit-risk determination."},
+ {q:"What is the difference between your PMCF plan and your PMCF evaluation report?",
+  ko:"PMCF Plan과 Evaluation Report의 차이를 설명하세요.",
+  model:"The plan comes first. It sets out the general and specific PMCF activities, the objectives, the methods and the schedule. The evaluation report comes afterwards and reports what those activities actually produced, what the findings mean for the clinical evaluation and for the risk management file, and what we will do next. The report then feeds back into the clinical evaluation report. They follow two different guidance documents, so we keep the structure of each aligned with its own template."},
+ {q:"You maintain the same report under three legal entities. How do you keep them consistent?",
+  ko:"동일 CER을 법인별로 병행 관리하는 방법을 설명하세요.",
+  model:"The clinical content is maintained from one master source, and each entity has its own document number and revision history. Any change to the clinical sections is applied to every version within the same revision cycle. Before release we cross-check the device names, model names, document numbers and revision numbers, because that is where the versions usually start to diverge. If a notified body comment applies to only one entity, we record which version it came from."},
+ {q:"Explain how the online survey qualifies as a specific PMCF activity.",
+  ko:"KOL 온라인 설문이 왜 specific PMCF activity인지 설명하세요.",
+  model:"It qualifies because the design is defined in advance rather than collected informally. We document the endpoints across four domains, which are clinical performance, clinical safety, usability and off-label use. We document the sample size, which is around ten respondents, and the frequency. The analysis path is also documented: Clinical Affairs summarises the responses, Quality Assurance and Design Management review that summary, and the conclusions are fed into the clinical evaluation report and the risk management file. That documented loop is what makes it a PMCF activity."},
+ {q:"For an Annex XVI device, what exactly are you demonstrating in the clinical evaluation?",
+  ko:"Annex XVI 기기 임상평가에서 무엇을 입증하는지 설명하세요.",
+  model:"Performance, not clinical benefit. Under Article 61(9) an Annex XVI device has no intended medical purpose, so the clinical evaluation has to show that the device achieves its intended performance and that the residual risks are acceptable in relation to that performance. We also apply the common specification for the relevant group, and the guidance on qualification and classification of Annex XVI devices. Throughout the report we use performance wording rather than benefit wording, so the claims stay consistent with that route."},
+ {q:"How do you decide whether a paper goes into the subject-device track or the state-of-the-art track?",
+  ko:"문헌을 어느 트랙에 넣을지 판단 기준을 설명하세요.",
+  model:"It depends on what the paper is evidence for, not on the technology it studies. If it studies the subject device, it goes into the subject-device track. If it describes how the indication is currently managed, including guidelines, standard of care and expected outcomes, it belongs to the state-of-the-art track, even when the treatment is not a device at all. Medical alternatives are identified separately for working purposes, but they are a sub-component of the state of the art, so in the report they are written up as one integrated section."},
+ {q:"Does state of the art mean the most advanced technology available?",
+  ko:"SOTA가 가장 앞선 기술을 뜻하는지 답하세요.",
+  model:"No, it does not. The definition we follow describes it as the developed stage of current technical capability and generally acknowledged clinical practice, based on the consolidated findings of science, technology and experience. So the test is what is generally acknowledged, not what is most advanced. If the standard of care for the indication is a drug, a surgical procedure or conservative management rather than a device, then that is the centre of the state of the art, and our device is compared against it."},
+ {q:"Which parts of the report did you change in response to the previous findings?",
+  ko:"이전 finding에 대응해 어느 부분을 바꿨는지 설명하세요.",
+  model:"I would take the findings one by one. For each finding we identify the section it affects, agree the response, and then place the revised text in that section, so the response and the document change are traceable to each other. After that we check the cross-references between the clinical evaluation report, the post-market documents and the risk management file, because a change in one usually requires a matching change in the others. The change history records which finding drove which revision."},
+ {q:"Your report cites a lot of literature. How did you assess the quality of those studies?",
+  ko:"문헌의 질을 어떻게 평가했는지 설명하세요.",
+  model:"Each included paper is appraised against a fixed set of items: the study design, the objective, the number of subjects, the population, the treatment parameters, the follow-up period, how the outcomes were assessed, the performance results, the safety results, and a critical evaluation. We also assign a level of evidence with a written rationale, following the appraisal guidance. Where the statistics are not adequate for the conclusion the authors draw, we say so in the critical evaluation column and we weight that paper accordingly."},
+ {q:"How do the clinical evaluation report and the risk management file talk to each other?",
+  ko:"CER과 RMF의 연결 관계를 설명하세요.",
+  model:"They are two sides of the same assessment. The risk management file identifies the hazards and the residual risks, and the clinical evaluation provides the clinical evidence that those residual risks are acceptable in relation to the performance. Any adverse event we find in the literature or in post-market data has to be traceable to a risk in the file, and any new risk has to be reflected in the acceptance criteria. When one document changes, we check the cross-references in the other before release."}
+];
+
+/* ── 4. 60초 설명 드릴 ─────────────────────────────────────── */
+const EXPLAIN = [
+ {t:"Explain what a clinical evaluation report is, to a colleague from the sales team.", ko:"영업팀 동료에게 CER이 무엇인지 설명하세요.",
+  keys:["어떤 근거를 모으는 문서인지 한 문장","왜 법적으로 필요한지","누가 검토하는지","제품 출시와 어떤 관계인지"]},
+ {t:"Explain the difference between state of the art and medical alternatives, and why they end up in one section.", ko:"SOTA와 MA의 차이, 그리고 왜 한 섹션으로 통합되는지 설명하세요.",
+  keys:["SOTA는 적응증 기준","MA는 그 하위 구성요소","트랙 분리는 작업 편의","보고서에서는 통합 서술"]},
+ {t:"Explain why an Annex XVI project cannot rely on the equivalence route.", ko:"Annex XVI 프로젝트가 동등성 루트를 못 쓰는 이유를 설명하세요.",
+  keys:["인증된 대상 기기가 없음","기술문서 접근권 확보 불가","그래서 직접 임상시험","유사기기는 참고 목적만"]},
+ {t:"Explain your three literature search tracks and what each one is for.", ko:"문헌검색 3개 트랙과 각각의 목적을 설명하세요.",
+  keys:["subject device","state of the art","medical alternatives","트랙별 검색기간이 다른 이유"]},
+ {t:"Explain what happens after a notified body finding arrives, step by step.", ko:"NB finding 접수 후 처리 절차를 단계별로 설명하세요.",
+  keys:["항목별 분해","대응 방향 합의","정식 답변 작성","문서 삽입 위치 지정","문서 간 참조 정합성 확인"]},
+ {t:"Explain how severity grading is used in your acceptance criteria.", ko:"severity grading을 acceptance criteria에 어떻게 쓰는지 설명하세요.",
+  keys:["단순 확률 상한이 아님","등급 + 발생률 상한 + denominator","허용과 불허의 경계","초과 시 무엇이 작동하는지"]},
+ {t:"Explain the relationship between the clinical evaluation report, the PMCF documents, and the risk management file.", ko:"CER·PMCF·RMF의 관계를 설명하세요.",
+  keys:["각 문서의 역할","데이터가 흐르는 방향","개정 시 함께 확인할 항목"]},
+ {t:"Explain what your device does, in plain English, to a non-technical colleague.", ko:"비전문가 동료에게 담당 기기를 쉬운 영어로 설명하세요.",
+  keys:["기술 방식을 한 문장으로","무엇에 쓰이는지","왜 등급이 높은지","전문용어 없이"]},
+ {t:"Explain how you decide that a paper should be excluded during title and abstract screening.", ko:"Title/Abstract 스크리닝에서 제외를 판단하는 기준을 설명하세요.",
+  keys:["선정·제외 기준을 미리 정의","제외 사유 매칭","기록 방식","재현 가능성"]},
+ {t:"Explain your document numbering and revision control across legal entities.", ko:"법인별 문서번호·개정 관리 방식을 설명하세요.",
+  keys:["법인별 문서번호 체계","마스터 소스","동일 개정 주기 반영","릴리즈 전 대조 항목"]},
+ {t:"Explain why the same wording has to be used for adverse event terms throughout the report.", ko:"보고서 전체에서 AE 용어를 통일해야 하는 이유를 설명하세요.",
+  keys:["최종 AE 목록 기준","동의어 치환","세부 표현은 severity 열에서","집계와 추적 가능성"]},
+ {t:"Explain how you would respond if a reviewer says your clinical evidence is not sufficient.", ko:"임상근거가 불충분하다는 지적에 어떻게 대응할지 설명하세요.",
+  keys:["지적의 범위를 특정","현재 근거를 정리","부족한 부분을 인정","보완 계획과 일정 제시"]}
+];
+
+/* ── 5. 표현 훈련 (듣기 회복 표현을 최우선) ────────────────── */
+const PHRASES = [
+ {cat:"못 알아들었을 때", why:"통역 없는 미팅에서 가장 자주 쓰게 됩니다. 이 표현이 자연스러우면 못 들어도 회의가 끊기지 않습니다.",
+  items:["Sorry, I missed that. Could you say it again?",
+         "Could you repeat the part after the acceptance criteria?",
+         "Would you mind slowing down a little? I want to make sure I get this right.",
+         "Just to make sure I understood, you are saying the finding applies to Section 3.24?",
+         "Could you spell that for me?",
+         "Would you mind putting that in the chat?",
+         "Let me read that back to you."]},
+ {cat:"생각할 시간을 벌 때", why:"침묵 대신 쓰는 표현입니다. 문장을 고르는 동안 대화를 붙잡아 둡니다.",
+  items:["That is a good question. Let me think for a second.",
+         "Let me rephrase that.",
+         "Can I come back to you on that after the call?",
+         "I want to give you an accurate answer, so let me check the document first.",
+         "The short answer is yes, and let me explain why."]},
+ {cat:"발언권을 가져올 때", why:"끼어들지 못하면 의견이 없는 사람으로 남습니다.",
+  items:["Can I add one thing here?",
+         "Sorry to jump in, but I have a point on that.",
+         "Before we move on, I have one question on the post-market section.",
+         "Can I go back to what you said about the search period?",
+         "May I finish this point first?"]},
+ {cat:"부드럽게 반대할 때", why:"NB나 본사와 이견이 있을 때 관계를 지키면서 근거를 세우는 표현입니다.",
+  items:["I see it slightly differently.",
+         "I am not sure that is the case. My understanding is that it applies only to the clinical evaluation.",
+         "That may be true in general, but for this device the situation is different.",
+         "I take your point, but the guidance we followed says something else.",
+         "Could we look at the wording together before we decide?"]},
+ {cat:"회의를 진행할 때", why:"발표자나 진행자를 맡았을 때 필요한 최소 표현입니다.",
+  items:["Let me share my screen.",
+         "Can everyone see the table?",
+         "Let us park that and come back to it at the end.",
+         "So the action item is that I will revise Section 4 and send it by Friday.",
+         "To summarise, we agreed on three things.",
+         "I will follow up by email with the details."]},
+ {cat:"근거를 밝힐 때", why:"규제 문서 담당자로서 답변의 무게를 결정하는 표현입니다.",
+  items:["That is documented in Section 3.6 of the report.",
+         "The requirement we followed is set out in Annex XIV.",
+         "We will document that in the next revision.",
+         "I would rather not answer from memory. Let me confirm the exact wording and come back to you.",
+         "The evidence for that is in the literature appraisal table, not in the summary."]},
+ {cat:"온라인 회의 문제 상황", why:"연결과 소리 문제는 매번 생깁니다. 외워 두면 당황하지 않습니다.",
+  items:["You are breaking up a little. Could you turn your camera off?",
+         "I think you are on mute.",
+         "Sorry, there is a delay on my side.",
+         "Can you hear me now?",
+         "I lost the last sentence. Could you go back one slide?"]}
+];
+
+/* ── 6. 롤플레이 시나리오 ─────────────────────────────────── */
+const SCENARIOS = [
+ {id:"nb", who:"Dr. Weber", role:"Notified body clinical reviewer", init:"W",
+  setup:"NB 임상 심사관과의 화상 회의. 제출한 CER의 finding을 하나씩 짚습니다.",
+  brief:"You are a notified body clinical reviewer holding a teleconference about a clinical evaluation report for an energy-based aesthetic device. You are formal, precise and probing. You ask where evidence sits in the document, you ask for justifications, and you push back once if an answer is vague.",
+  lines:["Thank you for making the time. I would like to start with the clinical evidence section. Could you summarise what evidence you are relying on for this device?",
+         "Understood. Now, on the state of the art. How did you decide what the state of the art is for this indication?",
+         "I see. And the acceptance criteria for adverse events. How were those thresholds derived?",
+         "One more point. Your search period differs between tracks. Can you justify that?",
+         "Thank you. Last question. If the post-market data shows a higher incidence than your threshold, what is your process?"]},
+ {id:"us", who:"Mark", role:"Regulatory colleague, US office", init:"M",
+  setup:"미국 본사 동료와의 주간 싱크. 말이 빠르고 일정 중심으로 묻습니다.",
+  brief:"You are a US-based regulatory affairs colleague on a weekly sync call with a Korean clinical affairs teammate. You are friendly, fast-talking and deadline-focused. You use casual business English and you sometimes add a quick follow-up in the same turn.",
+  lines:["Hey, good to see you. So where are we on the PMCF plan? Are we still on track for this quarter?",
+         "Got it. And what about the survey piece? Legal asked me how many respondents we are targeting.",
+         "Okay. One thing I need from you. Can you tell me in one sentence what changed between the last revision and this one?",
+         "That works. Do you need anything from my side to close it out?",
+         "Perfect. Last thing. Can you join the call with the notified body next week? They will probably ask you directly."]},
+ {id:"kol", who:"Prof. Alvarez", role:"Dermatologist, PMCF survey respondent", init:"A",
+  setup:"PMCF 설문에 참여할 임상의와의 사전 브리핑 통화.",
+  brief:"You are a practising dermatologist who has been invited to take part in an online survey about an energy-based aesthetic device. You are polite but busy, you ask practical clinical questions, and you want to know what will be done with your answers.",
+  lines:["Hello. I received your invitation to the survey. Before I agree, could you tell me what this is actually for?",
+         "I see. How long will it take, and what kind of questions are you asking?",
+         "One thing I want to understand. What happens to my answers afterwards?",
+         "And will my name appear anywhere in the report?",
+         "Alright. In my practice I do see some effects that are not in the instructions for use. Do you want to hear about those as well?"]},
+ {id:"pm", who:"Elena", role:"Project manager, cross-functional", init:"E",
+  setup:"부서 합동 상태 회의. 일정과 책임 소재를 확인합니다.",
+  brief:"You are a cross-functional project manager running a status meeting. You are direct, you want an owner and a date for every item, and you challenge vague answers with a follow-up question.",
+  lines:["Let us start with the clinical evaluation. What is the current status, and what is blocking it?",
+         "Okay, and who owns that? I need a name and a date.",
+         "You mentioned the risk file needs updating too. Is that dependent on your section, or can it run in parallel?",
+         "If the notified body comes back with more questions, how much time do we need to build in?",
+         "Last item. If we had to submit two weeks earlier, what would we have to drop?"]}
+];
+</script>
+
+<script>
+/* ═══════════════ helpers ═══════════════ */
+const $ = (s, r=document) => r.querySelector(s);
+const IOS = /iP(hone|ad|od)/.test(navigator.userAgent);
+const ANDROID = /Android/.test(navigator.userAgent);
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.random()*(i+1)|0; const t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function pool(arr){ let q=[]; return () => { if(!q.length) q=shuffle(arr.slice()); return q.pop(); }; }
+function today(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function fmt(ms){ const s=Math.max(0,Math.floor(ms/1000)); return String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0"); }
+
+/* ═══════════════ speech out ═══════════════ */
+const TTS = {
+  voices: [], idx: 0,
+  load(){
+    let v = [];
+    try { v = (speechSynthesis.getVoices()||[]).filter(x => /^en[-_]/i.test(x.lang)); } catch(e) {}
+    if (v.length) { v.sort((a,b) => a.lang.localeCompare(b.lang)); TTS.voices = v; renderVoices(); }
+  },
+  unlock(){ try { const u = new SpeechSynthesisUtterance("."); u.volume = 0; speechSynthesis.speak(u); } catch(e){} },
+  pick(){
+    if (!TTS.voices.length) return null;
+    if (S.voice === "auto") return TTS.voices[(TTS.idx++) % TTS.voices.length];
+    return TTS.voices.find(v => v.voiceURI === S.voice) || TTS.voices[0];
+  },
+  stop(){ try { speechSynthesis.cancel(); } catch(e){} },
+  speak(text, opt){
+    opt = opt || {};
+    return new Promise(res => {
+      if (!("speechSynthesis" in window)) return res();
+      const vis = opt.el;
+      if (vis) vis.classList.add("speaking");
+      let ka = null, done = false, started = false, tries = 0, cur = null;
+      const fin = () => { if (done) return; done = true; if (ka) clearInterval(ka); if (vis) vis.classList.remove("speaking"); res(); };
+      const mk = () => {
+        const u = new SpeechSynthesisUtterance(text);
+        const v = opt.voice || TTS.pick();
+        if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = "en-US"; }
+        u.rate = opt.rate || S.rate;
+        u.onstart = () => { started = true; };
+        u.onend = () => { if (u === cur) fin(); };
+        u.onerror = () => { if (u === cur) fin(); };
+        cur = u; return u;
+      };
+      const go = () => {
+        tries++;
+        try { speechSynthesis.speak(mk()); } catch(e) { return fin(); }
+        /* 안드로이드 Chrome은 cancel() 직후의 speak()를 조용히 삼키는 일이 있다.
+           소리가 시작되지 않으면 한 번 더 시도한다. */
+        if (ANDROID && tries < 3) setTimeout(() => {
+          if (started || done) return;
+          cur = null;
+          try { speechSynthesis.cancel(); } catch(e){}
+          setTimeout(go, 150);
+        }, 1200);
+      };
+      cur = null;
+      try { speechSynthesis.cancel(); } catch(e){}
+      if (!IOS) ka = setInterval(() => { try { if (speechSynthesis.speaking) { speechSynthesis.pause(); speechSynthesis.resume(); } } catch(e){} }, 9000);
+      if (ANDROID) setTimeout(go, 150); else go();
+    });
+  }
+};
+if ("speechSynthesis" in window) { TTS.load(); speechSynthesis.onvoiceschanged = TTS.load; setTimeout(TTS.load, 900); }
+
+/* ═══════════════ speech in ═══════════════ */
+const SRC = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null;
+function micSay(msg, bad){
+  const n = document.getElementById("micNote");
+  if (!n) return;
+  n.textContent = msg;
+  n.style.color = bad ? "var(--flag)" : "var(--muted)";
+}
+const RECERR = {
+  "not-allowed": "마이크 권한이 차단되어 있습니다. 주소창의 자물쇠(또는 카메라) 아이콘에서 마이크를 허용해 주세요. 페이지가 창 안에 끼워져 있으면 브라우저가 마이크를 아예 막기도 합니다 — 이때는 아래 칸에 직접 입력하시면 됩니다.",
+  "service-not-allowed": "브라우저가 음성 인식 서비스를 막았습니다. 아래 칸에 직접 입력해 주세요.",
+  "audio-capture": "마이크를 찾지 못했습니다. 입력 장치를 확인하거나 아래 칸에 직접 입력해 주세요.",
+  "network": "음성 인식이 네트워크에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요.",
+  "no-speech": "소리가 들리지 않았습니다. 마이크를 켜고 다시 눌러 말해 주세요."
+};
+function stopRec(btn){
+  if (rec) { try { rec.onend = null; rec.stop(); } catch(e){} rec = null; }
+  if (btn) { btn.classList.remove("rec"); btn.textContent = "🎙 말하기"; }
+}
+async function dictate(ta, btn){
+  if (rec) { stopRec(btn); micSay("입력을 멈췄습니다. 이어서 말하려면 다시 누르세요."); return; }
+  if (!SRC) { micSay(MICHINT, true); return; }
+  stopLoop(); TTS.stop();
+  btn.textContent = "준비 중…";
+  try {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      const st = await navigator.mediaDevices.getUserMedia({ audio: true });
+      st.getTracks().forEach(t => t.stop());
+    }
+  } catch(err) {
+    btn.textContent = "🎙 말하기";
+    const nm = err && err.name;
+    micSay(nm === "NotFoundError" ? RECERR["audio-capture"] : RECERR["not-allowed"], true);
+    return;
+  }
+  rec = new SRC();
+  rec.lang = "en-US"; rec.continuous = true; rec.interimResults = true;
+  let base = ta.value ? ta.value + " " : "";
+  rec.onresult = e => {
+    let fin = "", itm = "";
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) fin += e.results[i][0].transcript + " "; else itm += e.results[i][0].transcript;
+    }
+    if (fin) base += fin;
+    ta.value = (base + itm).replace(/\s+/g, " ").trimStart();
+  };
+  rec.onstart = () => micSay("듣고 있습니다. 편하게 말하세요. 끝나면 다시 눌러 멈춥니다.");
+  rec.onerror = e => {
+    const c = e && e.error;
+    if (c && c !== "aborted") micSay(RECERR[c] || ("음성 인식 오류: " + c + ". 아래 칸에 직접 입력해 주세요."), true);
+    stopRec(btn);
+  };
+  rec.onend = () => { if (rec) stopRec(btn); };
+  btn.classList.add("rec"); btn.textContent = "■ 멈추기";
+  try { rec.start(); }
+  catch(e) { stopRec(btn); micSay("마이크를 시작하지 못했습니다. 아래 칸에 직접 입력해 주세요.", true); }
+}
+function micBtn(id){ return SRC ? '<button class="btn" id="' + id + '" style="flex:none">🎙 말하기</button>' : ""; }
+const MICHINT = SRC ? "말하기를 누르면 마이크 권한을 먼저 묻습니다. 막혀 있으면 아래 칸에 직접 입력하세요 — 채점에는 차이가 없습니다."
+                    : "이 브라우저는 음성 인식을 지원하지 않습니다. 휴대폰이라면 키보드의 마이크(받아쓰기) 버튼을 쓰면 말한 대로 입력됩니다.";
+function micHint(){ return '<p class="hint" id="micNote" style="margin-top:6px">' + MICHINT + "</p>"; }
+
+/* ═══════════════ capabilities ═══════════════ */
+let AI = null, DBH = null;
+async function initAI(){
+  try { if (window.claude && claude.use) AI = await claude.use("sample"); } catch(e) { AI = null; }
+  paintAI();
+}
+async function initDB(){
+  try { if (window.claude && claude.use) DBH = await claude.use("db"); } catch(e) { DBH = null; }
+  await loadProgress(); paintStats();
+}
+const PARTNER_PROMPT = [
+"You are my English speaking partner for online business meetings.",
+"",
+"My background: I work in Clinical Affairs at a medical device manufacturer.",
+"I write EU MDR Clinical Evaluation Reports (CER) and PMCF documents, and I",
+"respond to notified body findings. I join Teams meetings with notified body",
+"reviewers, colleagues at our US office, and clinicians, without an interpreter.",
+"My listening is weaker than my speaking.",
+"",
+"Run this as a role-play, not a lesson:",
+"1. Ask me which counterpart you should play: a notified body clinical reviewer,",
+"   a US regulatory colleague, a project manager, or a dermatologist for a PMCF survey.",
+"2. Stay fully in that role. Speak one to three sentences per turn and ask one",
+"   question each turn. Do not correct my English while we are talking.",
+"3. If I say \"sorry, could you repeat that\", rephrase more slowly and simply,",
+"   exactly as a real colleague would.",
+"4. After 5 of my turns, stop and give feedback:",
+"   - 한국어 3~4문장 총평 (내용 전달 + 영어 표현)",
+"   - up to 3 corrections in the form \"I said X -> better: Y\"",
+"   - 2 expressions I should have used, in English",
+"5. Then ask if I want another round.",
+"",
+"Never invent facts about my devices. Start now by asking which counterpart to play."
+].join(String.fromCharCode(10));
+
+function paintAI(){
+  const n = $("#aiState");
+  n.textContent = AI ? "대화 상대 연결됨 — 답변마다 교정과 모범 답변을 받습니다."
+                     : "내장 모드 — 듣기 드릴과 저장된 모범 답변으로 진행합니다.";
+  const card = $("#partnerCard");
+  if (card) card.hidden = !!AI;
+}
+function initOffline(){
+  const ta = $("#partnerPrompt");
+  if (ta) ta.value = PARTNER_PROMPT;
+  const btn = $("#copyPrompt");
+  if (btn) btn.onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(PARTNER_PROMPT);
+      btn.textContent = "복사됨";
+    } catch(e) {
+      ta.focus(); ta.select(); ta.setSelectionRange(0, PARTNER_PROMPT.length);
+      let ok = false;
+      try { ok = document.execCommand("copy"); } catch(e2) {}
+      btn.textContent = ok ? "복사됨" : "위 칸을 길게 눌러 복사하세요";
+    }
+    setTimeout(() => { btn.textContent = "프롬프트 복사"; }, 2600);
+  };
+  let ok = true;
+  try { localStorage.setItem("__ni_t", "1"); localStorage.removeItem("__ni_t"); } catch(e) { ok = false; }
+  if (!ok) {
+    const s = $("#storeState");
+    s.hidden = false;
+    s.textContent = "이 브라우저에서는 진도가 저장되지 않습니다. 연습에는 지장이 없습니다.";
+    s.style.color = "var(--signal)";
+  }
+}
+function aiErrMsg(e){
+  const c = e && e.code;
+  if (c === "not_granted" || c === "not_declared") { AI = null; paintAI(); return "AI 피드백을 쓸 수 없어 저장된 모범 답변으로 진행합니다."; }
+  if (c === "rate_limited") return "요청이 많습니다. 잠시 뒤 다시 눌러 주세요.";
+  if (c === "cancelled") return "";
+  if (c === "invalid_json") return "응답을 해석하지 못했습니다. 다시 시도해 주세요.";
+  return "연결 문제로 피드백을 받지 못했습니다. 아래 모범 답변을 확인하세요.";
+}
+
+/* ═══════════════ progress store ═══════════════ */
+const LSK = "no-interpreter.progress.v1";
+let P = { totalMin: 0, sessions: 0, days: [], lastTarget: 30, notes: [] };
+async function loadProgress(){
+  let d = null;
+  if (DBH) { try { const s = await DBH.doc("progress/main").get(); if (s && s.exists) d = s.data(); } catch(e){} }
+  if (!d) { try { d = JSON.parse(localStorage.getItem(LSK) || "null"); } catch(e){} }
+  if (d && typeof d === "object") {
+    P.totalMin = +d.totalMin || 0; P.sessions = +d.sessions || 0;
+    P.days = Array.isArray(d.days) ? d.days : []; P.lastTarget = +d.lastTarget || 30;
+    P.notes = Array.isArray(d.notes) ? d.notes : [];
+  }
+  const sug = Math.min(90, (P.lastTarget || 30) + (P.sessions > 0 ? 5 : 0));
+  S.target = P.sessions > 0 ? sug : 30;
+  paintDur();
+}
+async function saveProgress(){
+  try { localStorage.setItem(LSK, JSON.stringify(P)); } catch(e){}
+  if (DBH) { try { await DBH.doc("progress/main").set(JSON.parse(JSON.stringify(P))); } catch(e){} }
+}
+function streak(){
+  const set = new Set(P.days); let n = 0; const d = new Date();
+  for (;;) {
+    const k = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+    if (set.has(k)) { n++; d.setDate(d.getDate()-1); }
+    else if (n === 0 && k === today()) { d.setDate(d.getDate()-1); }
+    else break;
+    if (n > 400) break;
+  }
+  return n;
+}
+function paintStats(){
+  $("#stTotal").textContent = P.totalMin;
+  $("#stSessions").textContent = P.sessions;
+  $("#stStreak").textContent = streak();
+  $("#notesBtn").textContent = "복습 노트 열기 (" + P.notes.length + ")";
+}
+function saveNote(en, ko, kind){
+  if (!en) return;
+  if (P.notes.some(n => n.en === en)) return;
+  P.notes.unshift({ en: en, ko: ko || "", kind: kind || "", at: today() });
+  if (P.notes.length > 200) P.notes.length = 200;
+  S.added++;
+  saveProgress(); paintStats();
+}
+
+/* ═══════════════ session state ═══════════════ */
+const S = { target: 30, focus: "listen", rate: 0.95, voice: "auto",
+            startedAt: 0, targetMs: 0, untimed: false, nudged: false,
+            step: 0, plan: [], added: 0, drills: 0, dictScores: [] };
+
+const PLANS = {
+  listen:  ["phrase","dictation","detail","listen","dictation","detail","listen","roleplay","dictation","listen","explain","detail"],
+  balance: ["phrase","dictation","listen","detail","explain","roleplay","dictation","listen","detail","explain"],
+  speak:   ["phrase","listen","explain","roleplay","explain","listen","detail","roleplay","explain","dictation"]
+};
+const LABEL = { phrase:"표현 훈련", dictation:"받아쓰기", detail:"세부 청취", listen:"듣고 답하기", explain:"60초 설명", roleplay:"모의 회의" };
+const SUB   = { phrase:"상황별 표현 능동 회상", dictation:"문장 전체를 받아쓰기", detail:"숫자·조항·문서번호 잡기", listen:"질문을 듣고 답변", explain:"주제를 스스로 설명", roleplay:"상대와 5턴 대화" };
+const LKIND = { dictation:1, detail:1, listen:1, roleplay:1 };
+
+const pDict = pool(DICTATION), pDet = pool(DETAIL), pQA = pool(QA), pEx = pool(EXPLAIN), pPh = pool(PHRASES), pSc = pool(SCENARIOS);
+
+/* ═══════════════ setup screen ═══════════════ */
+const DURS = [20, 30, 40, 50, 60, 0];
+function paintDur(){
+  $("#durChips").innerHTML = DURS.map(d =>
+    '<button class="chip" role="button" aria-pressed="' + (S.target === d) + '" data-d="' + d + '">' + (d ? d + "분" : "무제한") + "</button>").join("");
+  $("#durHint").textContent = P.sessions > 0 && S.target > (P.lastTarget || 0)
+    ? "지난 세션보다 5분 길게 잡았습니다. 시간이 다 돼도 자동 종료되지 않습니다."
+    : "시간이 다 돼도 자동으로 끝나지 않습니다. 종료 버튼을 누를 때까지 계속 이어집니다.";
+  paintPlan();
+}
+const FOCI = [["listen","듣기 위주 (추천)"],["balance","균형"],["speak","말하기 위주"]];
+const FHINT = { listen:"받아쓰기와 세부 청취의 비중을 높입니다. 듣기가 약할 때 시작점입니다.",
+                balance:"듣기와 말하기를 번갈아 배치합니다.",
+                speak:"설명·모의 회의 중심으로 발화량을 늘립니다." };
+function paintFocus(){
+  $("#focusChips").innerHTML = FOCI.map(f =>
+    '<button class="chip" aria-pressed="' + (S.focus === f[0]) + '" data-f="' + f[0] + '">' + f[1] + "</button>").join("");
+  $("#focusHint").textContent = FHINT[S.focus];
+  paintPlan();
+}
+const RATES = [["0.75","아주 느리게"],["0.88","느리게"],["0.98","보통"],["1.1","빠르게"]];
+function paintRate(){
+  $("#rateChips").innerHTML = RATES.map(r =>
+    '<button class="chip" aria-pressed="' + (String(S.rate) === r[0]) + '" data-r="' + r[0] + '">' + r[1] + "</button>").join("");
+}
+function renderVoices(){
+  const sel = $("#voiceSel"); if (!sel) return;
+  const cur = S.voice;
+  sel.innerHTML = '<option value="auto">자동 회전 (억양 섞기)</option>' +
+    TTS.voices.map(v => '<option value="' + esc(v.voiceURI) + '">' + esc(v.name + " · " + v.lang) + "</option>").join("");
+  sel.value = cur;
+  if (!TTS.voices.length) $("#voiceHint").textContent = "이 기기에서 영어 목소리를 찾지 못했습니다. 설정에서 영어 음성을 추가하면 듣기 드릴이 켜집니다.";
+}
+function paintPlan(){
+  const p = PLANS[S.focus];
+  const n = S.target ? Math.max(4, Math.round(S.target / 4)) : 8;
+  const rows = [];
+  for (let i = 0; i < Math.min(n, 7); i++) {
+    const t = p[i % p.length];
+    rows.push('<div class="plan-row"><i>' + (i+1) + "</i><b>" + LABEL[t] + "</b><span>" + SUB[t] + "</span></div>");
+  }
+  rows.push('<div class="plan-row"><i>&#8734;</i><b>이후 계속 반복</b><span>종료를 누를 때까지</span></div>');
+  $("#planPreview").innerHTML = rows.join("");
+}
+paintFocus(); paintRate(); paintDur(); renderVoices();
+
+$("#durChips").addEventListener("click", e => { const b = e.target.closest("[data-d]"); if (!b) return; S.target = +b.dataset.d; paintDur(); });
+$("#focusChips").addEventListener("click", e => { const b = e.target.closest("[data-f]"); if (!b) return; S.focus = b.dataset.f; paintFocus(); });
+$("#rateChips").addEventListener("click", e => { const b = e.target.closest("[data-r]"); if (!b) return; S.rate = +b.dataset.r; paintRate(); });
+$("#voiceSel").addEventListener("change", e => { S.voice = e.target.value; });
+$("#testVoice").addEventListener("click", () => { TTS.unlock(); TTS.speak("Could you repeat the part about the search period justification?"); });
+$("#notesBtn").addEventListener("click", showNotes);
+
+/* ═══════════════ screens ═══════════════ */
+function show(id){
+  ["setup","session","debrief","notes"].forEach(k => { $("#" + k).hidden = (k !== id); });
+  $("#dock").hidden = (id !== "session");
+  window.scrollTo(0, 0);
+}
+
+/* ═══════════════ timer ═══════════════ */
+let wl = null;
+async function wake(){ try { if ("wakeLock" in navigator) wl = await navigator.wakeLock.request("screen"); } catch(e){} }
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && S.startedAt) wake(); });
+setInterval(() => {
+  if (!S.startedAt) return;
+  const ms = Date.now() - S.startedAt;
+  $("#clock").firstChild.nodeValue = fmt(ms) + " ";
+  if (S.untimed) { $("#clockTarget").textContent = "무제한"; $("#bar").style.display = "none"; return; }
+  const over = ms - S.targetMs;
+  $("#clockTarget").textContent = over > 0 ? "목표 " + Math.round(S.targetMs/60000) + "분 +" + Math.floor(over/60000) + "분"
+                                           : "/ " + Math.round(S.targetMs/60000) + "분";
+  $("#bar").classList.toggle("over", over > 0);
+  $("#bar").firstElementChild.style.width = Math.min(100, ms / S.targetMs * 100) + "%";
+  if (over > 0 && !S.nudged) { S.nudged = true; nudge(); }
+}, 1000);
+
+function nudge(){
+  const b = $("#banner"); b.hidden = false;
+  b.innerHTML = '<div class="banner"><b>목표 ' + Math.round(S.targetMs/60000) + '분을 채웠습니다.</b><br>' +
+    '멈추지 않고 이어집니다. 계속하려면 그대로 두세요.' +
+    '<div class="row-wrap" style="margin-top:10px">' +
+    '<button class="btn quiet" data-n="10">+10분</button>' +
+    '<button class="btn quiet" data-n="0">시간 제한 없이</button>' +
+    '<button class="btn quiet" data-n="-1">이제 마무리</button></div></div>';
+  b.onclick = e => {
+    const t = e.target.closest("[data-n]"); if (!t) return;
+    const v = +t.dataset.n;
+    if (v === -1) return finish();
+    if (v === 0) S.untimed = true; else { S.targetMs += v * 60000; S.nudged = false; }
+    b.hidden = true;
+  };
+}
+$("#plus10").addEventListener("click", () => {
+  if (S.untimed) return;
+  S.targetMs += 10 * 60000; S.nudged = false; $("#banner").hidden = true;
+});
+$("#endBtn").addEventListener("click", finish);
+
+/* ═══════════════ start / finish ═══════════════ */
+$("#startBtn").addEventListener("click", () => {
+  TTS.unlock(); wake();
+  S.plan = PLANS[S.focus];
+  S.startedAt = Date.now();
+  S.targetMs = (S.target || 30) * 60000;
+  S.untimed = S.target === 0;
+  S.nudged = false; S.step = 0; S.added = 0; S.drills = 0; S.dictScores = [];
+  $("#banner").hidden = true;
+  show("session");
+  nextDrill();
+});
+
+async function finish(){
+  if (!S.startedAt) return;
+  stopLoop(); TTS.stop(); if (rec) { try { rec.stop(); } catch(e){} rec = null; }
+  const mins = Math.max(1, Math.round((Date.now() - S.startedAt) / 60000));
+  S.startedAt = 0;
+  try { if (wl) { wl.release(); wl = null; } } catch(e){}
+  P.totalMin += mins; P.sessions += 1; P.lastTarget = S.target || P.lastTarget;
+  if (!P.days.includes(today())) P.days.push(today());
+  if (P.days.length > 400) P.days = P.days.slice(-400);
+  await saveProgress(); paintStats();
+  const avg = S.dictScores.length ? Math.round(S.dictScores.reduce((a,b) => a+b, 0) / S.dictScores.length) : null;
+  $("#debrief").innerHTML =
+    '<div class="hero"><h1>' + mins + '분, 수고했습니다</h1><p>다음 세션은 ' + Math.min(90, mins + 5) + '분을 목표로 제안합니다.</p></div>' +
+    '<div class="stat-strip"><div class="stat"><b class="mono">' + mins + '</b><span>오늘 연습(분)</span></div>' +
+    '<div class="stat"><b class="mono">' + S.drills + '</b><span>드릴</span></div>' +
+    '<div class="stat"><b class="mono">' + (avg === null ? "–" : avg + "%") + '</b><span>받아쓰기 정확도</span></div></div>' +
+    (S.added ? '<div class="card"><div class="eyebrow" style="margin-bottom:8px">이번 세션에 담은 표현</div><p class="ko">' + S.added + '개를 복습 노트에 저장했습니다. 다음 세션 전에 한 번 들어 보세요.</p></div>' : "") +
+    '<button class="btn primary big wide" id="againBtn">한 번 더 시작</button>' +
+    '<button class="btn wide" id="toNotes">복습 노트 열기</button>';
+  $("#againBtn").onclick = () => { S.target = Math.min(90, mins + 5); paintDur(); show("setup"); };
+  $("#toNotes").onclick = showNotes;
+  show("debrief");
+}
+
+/* ═══════════════ notes ═══════════════ */
+function showNotes(){
+  const list = P.notes.length
+    ? P.notes.map((n, i) =>
+        '<div class="note-item"><div class="note-meta">' + esc(n.kind || "note") + " · " + esc(n.at) + "</div>" +
+        '<div class="note-en">' + esc(n.en) + "</div>" +
+        (n.ko ? '<div class="hint" style="margin-top:3px">' + esc(n.ko) + "</div>" : "") +
+        '<div class="row" style="margin-top:6px"><button class="btn ghost" data-p="' + i + '">▶ 듣기</button>' +
+        '<button class="btn ghost" data-x="' + i + '">삭제</button></div></div>').join("")
+    : '<p class="ko">아직 저장한 표현이 없습니다. 드릴 화면에서 <b>노트에 저장</b>을 누르면 여기에 쌓입니다.</p>';
+  $("#notes").innerHTML =
+    '<div class="hero"><h1>복습 노트</h1><p>세션에서 놓쳤거나 담아 둔 문장입니다. 소리로 다시 확인하세요.</p></div>' +
+    '<div class="card">' + list + "</div>" +
+    '<button class="btn wide" id="notesBack">돌아가기</button>';
+  $("#notesBack").onclick = () => show(S.startedAt ? "session" : "setup");
+  show("notes");
+}
+$("#notes").addEventListener("click", e => {
+  const p = e.target.closest("[data-p]"), x = e.target.closest("[data-x]");
+  if (p) { TTS.unlock(); TTS.speak(P.notes[+p.dataset.p].en); }
+  if (x) { P.notes.splice(+x.dataset.x, 1); saveProgress(); paintStats(); showNotes(); }
+});
+</script>
+
+<style>
+.turns.hidetext .bub.them{filter:blur(5px);opacity:.5}
+.count{font-family:var(--mono);font-size:22px;font-weight:500;font-variant-numeric:tabular-nums}
+.count.done{color:var(--flag)}
+.keys{background:var(--surface-2);border-radius:var(--r);padding:10px 12px}
+</style>
+<script>
+/* ═══════════════ 반복 재생 ═══════════════ */
+let looping = false, loopTid = null;
+function stopLoop(){
+  looping = false;
+  if (loopTid) { clearTimeout(loopTid); loopTid = null; }
+  const b = document.getElementById("loop");
+  if (b) { b.classList.remove("listening"); b.textContent = "🔁 반복 재생"; }
+}
+async function toggleLoop(text, v){
+  if (looping) { stopLoop(); TTS.stop(); return; }
+  const b = document.getElementById("loop");
+  looping = true;
+  if (b) { b.classList.add("listening"); b.textContent = "■ 반복 멈추기"; }
+  TTS.unlock();
+  let i = 0;
+  while (looping && i < 40) {
+    i++;
+    await TTS.speak(text, { voice: v, rate: S.rate, el: document.getElementById("spk") });
+    if (!looping) break;
+    await new Promise(r => { loopTid = setTimeout(r, 1400); });
+  }
+  stopLoop();
+}
+function loopBtn(){ return '<button class="btn quiet" id="loop">🔁 반복 재생</button>'; }
+
+/* ═══════════════ drill shell ═══════════════ */
+const stage = $("#stage");
+function vName(v){ return v ? v.name.replace(/^(Microsoft|Google|Apple)\s+/, "").replace(/\s+Online.*$/, "") : "기기 기본 음성"; }
+function vTag(v){ const p = v && v.lang ? v.lang.split(/[-_]/)[1] : null; return p ? p.toUpperCase() : "EN"; }
+function shell(type, body){
+  const L = !!LKIND[type];
+  return '<div class="card"><div class="drill-head">' +
+    '<span class="tag' + (L ? " listen" : "") + '">' + (L ? "listening" : "speaking") + "</span>" +
+    '<span class="stream">' + LABEL[type] + " &middot; #" + S.step + "</span></div>" + body + "</div>";
+}
+function speakerBlock(name, role, tag){
+  return '<div class="speaker" id="spk"><div class="avatar mono">' + esc(tag) + "</div>" +
+    '<div><div class="speaker-name">' + esc(name) + '</div><div class="speaker-role">' + esc(role) + "</div></div>" +
+    '<div class="wave"><i></i><i></i><i></i><i></i></div></div>';
+}
+function foot(){ return '<button class="btn ghost wide" id="skip" style="margin-top:8px">이 드릴 건너뛰기</button>'; }
+function wireFoot(){ const b = $("#skip"); if (b) b.onclick = nextDrill; }
+
+function nextDrill(){
+  stopLoop(); TTS.stop(); if (rec) { try { rec.stop(); } catch(e){} rec = null; }
+  S.step++; S.drills++;
+  const t = S.plan[(S.step - 1) % S.plan.length];
+  const v = TTS.pick();
+  ({ phrase: drillPhrase, dictation: drillDict, detail: drillDetail,
+     listen: drillListen, explain: drillExplain, roleplay: drillRole })[t](v);
+  wireFoot();
+  window.scrollTo(0, 0);
+}
+
+/* ═══════════════ text compare ═══════════════ */
+function norm(s){ return String(s || "").toLowerCase().replace(/[^a-z0-9\s./-]/g, " ").replace(/\s+/g, " ").trim(); }
+function toks(s){ return norm(s).split(" ").map(t => t.replace(/^[.\-]+|[.\-]+$/g, "")).filter(Boolean); }
+function lcsMark(a, b){
+  const n = a.length, m = b.length;
+  const dp = []; for (let i = 0; i <= n; i++) dp.push(new Uint16Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
+    dp[i][j] = a[i] === b[j] ? dp[i+1][j+1] + 1 : Math.max(dp[i+1][j], dp[i][j+1]);
+  const mark = new Array(n).fill(false);
+  let i = 0, j = 0;
+  while (i < n && j < m) {
+    if (a[i] === b[j]) { mark[i] = true; i++; j++; }
+    else if (dp[i+1][j] >= dp[i][j+1]) i++; else j++;
+  }
+  return mark;
+}
+function diffHTML(orig, user){
+  const words = orig.split(/\s+/).filter(Boolean);
+  const a = words.map(w => norm(w).replace(/^[.\-]+|[.\-]+$/g, ""));
+  const mark = lcsMark(a, toks(user));
+  const hit = mark.filter(Boolean).length;
+  const html = words.map((w, i) => mark[i] ? esc(w) : '<span class="miss">' + esc(w) + "</span>").join(" ");
+  return { html: html, score: Math.round(hit / Math.max(1, words.length) * 100), hit: hit, total: words.length };
+}
+function chunkHit(chunk, user){
+  let keys = toks(chunk).filter(t => /\d/.test(t));
+  if (!keys.length) keys = toks(chunk).filter(t => t.length > 3);
+  if (!keys.length) return true;
+  const u = " " + toks(user).join(" ") + " ";
+  const hit = keys.filter(k => u.indexOf(" " + k + " ") >= 0).length;
+  return hit / keys.length >= 0.5;
+}
+
+/* ═══════════════ small builders ═══════════════ */
+function saveRow(en, ko, kind){
+  return '<button class="btn quiet" data-save="' + esc(en) + '" data-ko="' + esc(ko || "") + '" data-kind="' + esc(kind) + '">노트에 저장</button>';
+}
+stage.addEventListener("click", e => {
+  const s = e.target.closest("[data-save]");
+  if (s) { saveNote(s.dataset.save, s.dataset.ko, s.dataset.kind); s.textContent = "저장됨"; s.disabled = true; }
+  const p = e.target.closest("[data-say]");
+  if (p) { TTS.unlock(); TTS.speak(p.dataset.say, { voice: S.curVoice, el: $("#spk") }); }
+});
+
+/* ═══════════════ 1. 표현 훈련 ═══════════════ */
+function drillPhrase(v){
+  S.curVoice = v;
+  const g = pPh();
+  stage.innerHTML = shell("phrase",
+    '<div class="situation">' + esc(g.cat) + "</div>" +
+    '<p class="hint" style="margin-top:6px">' + esc(g.why) + "</p>" +
+    '<div class="task" style="margin-top:12px">이 상황에서 쓸 영어 표현을 먼저 소리 내어 말해 보세요. 그다음 아래를 열어 비교합니다.</div>' +
+    '<button class="btn primary wide" id="reveal" style="margin-top:12px">표현 열기</button>' +
+    '<div id="out"></div>') + foot();
+  $("#reveal").onclick = () => {
+    $("#reveal").remove();
+    $("#out").innerHTML =
+      '<div class="phrase-list" style="margin-top:4px">' +
+      g.items.map(t => '<div class="phrase-item"><button data-say="' + esc(t) + '" aria-label="듣기">▶</button><span>' + esc(t) + "</span></div>").join("") +
+      "</div>" +
+      '<p class="hint" style="margin-top:10px">각 문장을 두 번씩 따라 말해 보세요. 억양까지 따라 하면 회의에서 그대로 나옵니다.</p>' +
+      '<div class="row-wrap" style="margin-top:10px">' +
+      '<button class="btn quiet" id="playAll">전체 듣기</button>' +
+      saveRow(g.items[0], g.cat, "표현") +
+      '<button class="btn primary" id="next">다음 →</button></div>';
+    $("#next").onclick = nextDrill;
+    $("#playAll").onclick = async () => {
+      TTS.unlock();
+      for (const t of g.items) { await TTS.speak(t, { voice: v, el: $("#spk") }); }
+    };
+  };
+}
+
+/* ═══════════════ 2. 받아쓰기 ═══════════════ */
+function drillDict(v){
+  S.curVoice = v;
+  const d = pDict();
+  let plays = 0;
+  stage.innerHTML = shell("dictation",
+    speakerBlock(vName(v), "회의 발언 · " + d.st, vTag(v)) +
+    '<div class="task">들리는 문장을 그대로 받아쓰세요. 다 못 써도 들은 만큼만 쓰면 됩니다.</div>' +
+    '<div class="row-wrap" style="margin-top:12px">' +
+    '<button class="btn primary" id="play">▶ 재생</button>' +
+    '<button class="btn quiet" id="slow">천천히 다시</button>' + loopBtn() +
+    '<span class="replays" id="rc"></span></div>' +
+    '<textarea id="ans" style="margin-top:12px" placeholder="들은 문장을 입력하세요"></textarea>' +
+    '<button class="btn primary wide" id="check" style="margin-top:10px">확인</button>' +
+    '<div id="out"></div>') + foot();
+  const rc = $("#rc");
+  const go = rate => { stopLoop(); TTS.unlock(); plays++; rc.textContent = "재생 " + plays + "회"; TTS.speak(d.en, { voice: v, rate: rate, el: $("#spk") }); };
+  $("#play").onclick = () => go(S.rate);
+  $("#slow").onclick = () => go(0.7);
+  $("#loop").onclick = () => toggleLoop(d.en, v);
+  go(S.rate);
+  $("#check").onclick = () => {
+    const r = diffHTML(d.en, $("#ans").value);
+    S.dictScores.push(r.score);
+    $("#check").remove();
+    $("#out").innerHTML =
+      '<div class="row" style="margin-top:14px;align-items:baseline;gap:10px">' +
+      '<span class="score" style="color:' + (r.score >= 80 ? "var(--ok)" : r.score >= 55 ? "var(--signal)" : "var(--flag)") + '">' + r.score + "%</span>" +
+      '<span class="hint">' + r.hit + " / " + r.total + "단어 · 놓친 단어에 표시했습니다</span></div>" +
+      '<p class="prompt-en diff" style="margin-top:10px">' + r.html + "</p>" +
+      '<p class="hint" style="margin-top:8px">' + esc(d.ko) + "</p>" +
+      '<div class="row-wrap" style="margin-top:12px">' +
+      '<button class="btn quiet" data-say="' + esc(d.en) + '">다시 듣기</button>' +
+      saveRow(d.en, d.ko, "받아쓰기") +
+      '<button class="btn primary" id="next">다음 →</button></div>';
+    $("#next").onclick = nextDrill;
+  };
+}
+
+/* ═══════════════ 3. 세부 청취 ═══════════════ */
+function drillDetail(v){
+  S.curVoice = v;
+  const d = pDet();
+  stage.innerHTML = shell("detail",
+    speakerBlock(vName(v), "숫자 · 조항 · 문서번호", vTag(v)) +
+    '<div class="task">문장 전체가 아니라 <b>숫자와 문서번호만</b> 잡아내면 됩니다.</div>' +
+    '<div class="row-wrap" style="margin-top:12px">' +
+    '<button class="btn primary" id="play">▶ 재생</button>' +
+    '<button class="btn quiet" id="slow">천천히 다시</button>' + loopBtn() + "</div>" +
+    '<div id="qbox" hidden style="margin-top:12px">' +
+    '<div class="situation">' + esc(d.ask) + "</div>" +
+    '<textarea id="ans" style="margin-top:8px" placeholder="들린 숫자와 번호만 적으세요"></textarea>' +
+    '<button class="btn primary wide" id="check" style="margin-top:10px">확인</button></div>' +
+    '<div id="out"></div>') + foot();
+  const go = rate => { stopLoop(); TTS.unlock(); TTS.speak(d.say, { voice: v, rate: rate, el: $("#spk") }); $("#qbox").hidden = false; };
+  $("#play").onclick = () => go(S.rate);
+  $("#slow").onclick = () => go(0.7);
+  $("#loop").onclick = () => { $("#qbox").hidden = false; toggleLoop(d.say, v); };
+  go(S.rate);
+  $("#check").onclick = () => {
+    const user = $("#ans").value;
+    const parts = d.ans.split("/").map(s => s.trim()).filter(Boolean);
+    const marks = parts.map(p => chunkHit(p, user));
+    const ok = marks.every(Boolean);
+    $("#check").remove();
+    $("#out").innerHTML =
+      '<div class="fb ' + (ok ? "ok" : "warn") + '" style="margin-top:12px">' +
+      (ok ? "정확히 잡았습니다." : "일부를 놓쳤습니다. 숫자는 천천히 다시 들어 보세요.") + "</div>" +
+      '<div style="margin-top:10px">' + parts.map((p, i) =>
+        '<div class="fix"><b style="color:' + (marks[i] ? "var(--ok)" : "var(--flag)") + '">' + (marks[i] ? "✓" : "✗") + "</b><span>" + esc(p) + "</span></div>").join("") + "</div>" +
+      '<div class="eyebrow" style="margin-top:12px">원문</div>' +
+      '<p class="prompt-en" style="margin-top:4px">' + esc(d.say) + "</p>" +
+      '<div class="row-wrap" style="margin-top:12px">' +
+      '<button class="btn quiet" data-say="' + esc(d.say) + '">다시 듣기</button>' +
+      saveRow(d.say, d.ans, "세부 청취") +
+      '<button class="btn primary" id="next">다음 →</button></div>';
+    $("#next").onclick = nextDrill;
+  };
+}
+
+/* ═══════════════ 4. 듣고 답하기 ═══════════════ */
+const ASKERS = [["Dr. Weber","Notified body reviewer","W"],["Mark","US regulatory colleague","M"],
+                ["Elena","Project manager","E"],["Prof. Alvarez","Dermatologist","A"]];
+function drillListen(v){
+  S.curVoice = v;
+  const q = pQA();
+  const a = ASKERS[Math.random() * ASKERS.length | 0];
+  stage.innerHTML = shell("listen",
+    speakerBlock(a[0] + " · " + vName(v), a[1], a[2]) +
+    '<div class="task">질문을 듣고 영어로 답하세요. 몇 번이든 다시 들어도 됩니다.</div>' +
+    '<div class="row-wrap" style="margin-top:12px"><button class="btn primary" id="play">▶ 질문 듣기</button>' +
+    '<button class="btn quiet" id="slow">천천히 다시</button>' + loopBtn() +
+    '<button class="btn quiet" id="showq">텍스트 보기</button></div>' +
+    '<p class="prompt-en prompt-hidden" id="qt" style="margin-top:12px">' + esc(q.q) + "</p>" +
+    '<p class="hint prompt-hidden" id="qk" style="margin-top:6px">' + esc(q.ko) + "</p>" +
+    '<div class="row" style="margin-top:12px;align-items:flex-start">' +
+    '<textarea id="ans" placeholder="영어로 답해 보세요"></textarea>' + micBtn("mic") + "</div>" +
+    micHint() +
+    '<button class="btn primary wide" id="check" style="margin-top:10px">' + (AI ? "피드백 받기" : "모범 답변 보기") + "</button>" +
+    '<div id="out"></div>') + foot();
+  const go = rate => { stopLoop(); TTS.unlock(); TTS.speak(q.q, { voice: v, rate: rate, el: $("#spk") }); };
+  $("#play").onclick = () => go(S.rate);
+  $("#slow").onclick = () => go(0.7);
+  $("#loop").onclick = () => toggleLoop(q.q, v);
+  $("#showq").onclick = () => {
+    const hid = $("#qt").classList.toggle("prompt-hidden");
+    $("#qk").classList.toggle("prompt-hidden", hid);
+    $("#showq").textContent = hid ? "텍스트 보기" : "텍스트 가리기";
+  };
+  if ($("#mic")) $("#mic").onclick = () => dictate($("#ans"), $("#mic"));
+  go(S.rate);
+  $("#check").onclick = () => runFeedback({
+    kind: "듣고 답하기", ask: q.q, ko: q.ko, model: q.model, voice: v,
+    answer: $("#ans").value,
+    prompt: "The counterpart asked in a video meeting: \"" + q.q + "\""
+  });
+}
+
+/* ═══════════════ 5. 60초 설명 ═══════════════ */
+function drillExplain(v){
+  S.curVoice = v;
+  const t = pEx();
+  stage.innerHTML = shell("explain",
+    '<div class="situation">' + esc(t.t) + "</div>" +
+    '<p class="hint" style="margin-top:6px">' + esc(t.ko) + "</p>" +
+    '<div class="keys" style="margin-top:12px"><div class="eyebrow" style="margin-bottom:6px">이건 꼭 넣으세요</div>' +
+    '<ul class="bullets">' + t.keys.map(k => "<li>" + esc(k) + "</li>").join("") + "</ul></div>" +
+    '<div class="row" style="margin-top:12px"><button class="btn primary" id="start60">60초 시작</button>' +
+    '<span class="count" id="cnt">1:00</span></div>' +
+    '<div class="row" style="margin-top:12px;align-items:flex-start">' +
+    '<textarea id="ans" placeholder="말하면서 요지를 적어도 되고, 전부 입력해도 됩니다"></textarea>' + micBtn("mic") + "</div>" +
+    micHint() +
+    '<button class="btn primary wide" id="check" style="margin-top:10px">' + (AI ? "피드백 받기" : "핵심 확인하기") + "</button>" +
+    '<div id="out"></div>') + foot();
+  if ($("#mic")) $("#mic").onclick = () => dictate($("#ans"), $("#mic"));
+  let iv = null;
+  $("#start60").onclick = () => {
+    if (iv) return;
+    let left = 60;
+    const c = $("#cnt");
+    $("#start60").disabled = true;
+    iv = setInterval(() => {
+      left--;
+      c.textContent = Math.floor(left/60) + ":" + String(left%60).padStart(2, "0");
+      if (left <= 0) { clearInterval(iv); iv = null; c.classList.add("done"); c.textContent = "시간 종료"; }
+    }, 1000);
+  };
+  $("#check").onclick = () => {
+    if (iv) { clearInterval(iv); iv = null; }
+    runFeedback({
+      kind: "60초 설명", ask: t.t, ko: t.ko, model: null, keys: t.keys, voice: v,
+      answer: $("#ans").value,
+      prompt: "They were asked to explain this to a colleague in a meeting: \"" + t.t + "\". The points that must appear: " + t.keys.join("; ")
+    });
+  };
+}
+
+/* ═══════════════ 공통 피드백 ═══════════════ */
+const COACH = "You are an English coach for a Korean Clinical Affairs professional who writes EU MDR clinical evaluation and PMCF documents and joins online meetings with notified bodies and overseas colleagues, without an interpreter. Judge whether the answer actually answers the question, then fix the English. Do not invent facts about any device. Keep the model answer speakable aloud in under 45 seconds.";
+async function runFeedback(o){
+  const out = $("#out"), btn = $("#check");
+  const ans = (o.answer || "").trim();
+  if (!ans && AI) { out.innerHTML = '<p class="hint" style="margin-top:10px">먼저 답을 말하거나 입력해 주세요. 한 문장이라도 좋습니다.</p>'; return; }
+  btn.disabled = true; btn.textContent = AI ? "확인 중…" : "여는 중…";
+  if (!AI) { renderFallback(o); return; }
+  try {
+    const r = await AI.json(
+      COACH + "\n\n" + o.prompt + "\nTheir spoken answer, transcribed and possibly rough: \"" + ans + "\"\n\n" +
+      'Reply with ONLY a JSON object of this shape: {"ok": true, "ko": "한국어 2~3문장 피드백", "fixes": [{"from":"their wording","to":"better wording"}], "model": "a natural English answer of 3 to 6 sentences", "phrases": ["short expression to memorise"]}. ' +
+      '"ok" is true when the answer addresses the question. Write "ko" in Korean, everything else in English. At most 3 fixes and 2 phrases.',
+      { modelTier: "default" });
+    renderFeedback(o, r);
+  } catch(e) {
+    const m = aiErrMsg(e);
+    if (m) out.innerHTML = '<div class="fb warn" style="margin-top:12px">' + esc(m) + "</div>";
+    renderFallback(o, true);
+  }
+}
+function renderFeedback(o, r){
+  const btn = $("#check"); if (btn) btn.remove();
+  const fixes = Array.isArray(r.fixes) ? r.fixes.slice(0, 3) : [];
+  const phr = Array.isArray(r.phrases) ? r.phrases.slice(0, 2) : [];
+  const model = r.model || o.model || "";
+  $("#out").innerHTML =
+    '<div class="fb ' + (r.ok ? "ok" : "warn") + '" style="margin-top:14px">' + esc(r.ko || (r.ok ? "질문에 답했습니다." : "질문의 초점을 조금 벗어났습니다.")) + "</div>" +
+    (fixes.length ? '<div class="eyebrow" style="margin-top:14px">표현 교정</div><div>' +
+      fixes.map(f => '<div class="fix"><s>' + esc(f.from) + "</s><b>→ " + esc(f.to) + "</b></div>").join("") + "</div>" : "") +
+    (model ? '<div class="eyebrow" style="margin-top:14px">모범 답변</div>' +
+      '<p class="model" style="margin-top:4px">' + esc(model) + "</p>" +
+      '<div class="row-wrap" style="margin-top:10px"><button class="btn quiet" data-say="' + esc(model) + '">▶ 듣기</button>' +
+      saveRow(model, o.ask, o.kind) + "</div>" : "") +
+    (phr.length ? '<div class="eyebrow" style="margin-top:14px">외워 둘 표현</div><div class="phrase-list">' +
+      phr.map(t => '<div class="phrase-item"><button data-say="' + esc(t) + '" aria-label="듣기">▶</button><span>' + esc(t) + "</span>" +
+        '<button class="btn ghost" data-save="' + esc(t) + '" data-ko="" data-kind="표현" style="margin-left:auto">저장</button></div>').join("") + "</div>" : "") +
+    '<button class="btn primary wide" id="next" style="margin-top:14px">다음 →</button>';
+  $("#next").onclick = nextDrill;
+}
+function renderFallback(o, appended){
+  const btn = $("#check"); if (btn) btn.remove();
+  const body = o.model
+    ? '<div class="eyebrow" style="margin-top:14px">모범 답변</div><p class="model" style="margin-top:4px">' + esc(o.model) + "</p>" +
+      '<div class="row-wrap" style="margin-top:10px"><button class="btn quiet" data-say="' + esc(o.model) + '">▶ 듣기</button>' +
+      saveRow(o.model, o.ask, o.kind) + "</div>"
+    : '<div class="eyebrow" style="margin-top:14px">스스로 확인</div><ul class="bullets" style="margin-top:6px">' +
+      (o.keys || []).map(k => "<li>" + esc(k) + " — 말했나요?</li>").join("") + "</ul>" +
+      '<p class="hint" style="margin-top:8px">내장 모드에서는 자동 교정이 없습니다. 위 항목을 하나씩 짚어 보세요.</p>';
+  $("#out").insertAdjacentHTML("beforeend", body + '<button class="btn primary wide" id="next" style="margin-top:14px">다음 →</button>');
+  $("#next").onclick = nextDrill;
+}
+
+/* ═══════════════ 6. 모의 회의 ═══════════════ */
+const RP = { sc: null, msgs: [], turns: 0, v: null };
+function drillRole(v){
+  S.curVoice = v;
+  const sc = pSc();
+  RP.sc = sc; RP.msgs = []; RP.turns = 0; RP.v = v;
+  stage.innerHTML = shell("roleplay",
+    speakerBlock(sc.who + " · " + vName(v), sc.role, sc.init) +
+    '<p class="hint">' + esc(sc.setup) + "</p>" +
+    '<div class="row-wrap" style="margin-top:10px">' +
+    '<button class="btn primary" id="begin">▶ 회의 시작</button>' +
+    '<button class="btn quiet" id="toggleT">텍스트 보기</button>' +
+    '<button class="btn quiet" id="replay">마지막 말 다시</button></div>' +
+    '<div class="turns' + (S.focus === "listen" ? " hidetext" : "") + '" id="turns" style="margin-top:12px"></div>' +
+    '<div class="row" style="margin-top:12px;align-items:flex-start">' +
+    '<textarea id="ans" placeholder="영어로 답하세요"></textarea>' + micBtn("mic") + "</div>" +
+    micHint() +
+    '<button class="btn primary wide" id="send" style="margin-top:10px" disabled>보내기</button>' +
+    '<div id="out"></div>') + foot();
+  if ($("#mic")) $("#mic").onclick = () => dictate($("#ans"), $("#mic"));
+  $("#toggleT").onclick = () => {
+    const t = $("#turns"); t.classList.toggle("hidetext");
+    $("#toggleT").textContent = t.classList.contains("hidetext") ? "텍스트 보기" : "텍스트 가리기";
+  };
+  $("#replay").onclick = () => { const l = RP.last; if (l) { TTS.unlock(); TTS.speak(l, { voice: v, el: $("#spk") }); } };
+  $("#begin").onclick = async () => { $("#begin").disabled = true; TTS.unlock(); await rpOpen(); $("#send").disabled = false; };
+  $("#send").onclick = async () => {
+    const t = $("#ans").value.trim(); if (!t) return;
+    if (rec) { try { rec.stop(); } catch(e){} }
+    $("#ans").value = ""; addBub("me", t); RP.turns++;
+    $("#send").disabled = true;
+    await rpReply(t);
+    $("#send").disabled = false;
+    if (RP.turns >= 5) endRole();
+  };
+}
+function addBub(cls, text){
+  const d = document.createElement("div");
+  d.className = "bub " + cls; d.textContent = text;
+  const t = $("#turns"); t.appendChild(d); t.scrollTop = t.scrollHeight;
+  return d;
+}
+async function speakThem(text){
+  RP.last = text;
+  await TTS.speak(text, { voice: RP.v, el: $("#spk") });
+}
+async function rpOpen(){
+  if (AI) {
+    RP.msgs = [{ role: "user", content: RP.sc.brief +
+      "\n\nYou are on a video call with a Korean Clinical Affairs professional who is practising English. Reply with ONLY your spoken line, one to three sentences, no name prefix and no stage directions. Ask one question per turn. Never correct their English. Speak your opening line now." }];
+    const b = addBub("them", "…");
+    try {
+      const r = await AI(RP.msgs, { modelTier: "default", cache: false, onText: u => { b.textContent = u.text; } });
+      RP.msgs.push({ role: "assistant", content: r.text });
+      b.textContent = r.text; await speakThem(r.text);
+      return;
+    } catch(e) { b.remove(); const m = aiErrMsg(e); if (m) addBub("sys", m); }
+  }
+  const line = RP.sc.lines[0];
+  addBub("them", line); await speakThem(line);
+}
+async function rpReply(userText){
+  if (AI) {
+    RP.msgs.push({ role: "user", content: userText });
+    const b = addBub("them", "…");
+    try {
+      const r = await AI(RP.msgs, { modelTier: "default", cache: false, onText: u => { b.textContent = u.text; } });
+      RP.msgs.push({ role: "assistant", content: r.text });
+      b.textContent = r.text; await speakThem(r.text);
+      return;
+    } catch(e) { b.remove(); const m = aiErrMsg(e); if (m) addBub("sys", m); }
+  }
+  const line = RP.sc.lines[Math.min(RP.turns, RP.sc.lines.length - 1)];
+  addBub("them", line); await speakThem(line);
+}
+function endRole(){
+  $("#send").disabled = true; $("#ans").disabled = true;
+  addBub("sys", "5턴을 마쳤습니다.");
+  $("#out").innerHTML = '<button class="btn primary wide" id="rfb" style="margin-top:12px">' + (AI ? "회의 피드백 받기" : "마치기") + "</button>";
+  $("#rfb").onclick = async () => {
+    if (!AI) return nextDrill();
+    const b = $("#rfb"); b.disabled = true; b.textContent = "정리 중…";
+    const script = RP.msgs.filter((m, i) => i > 0).map(m => (m.role === "user" ? "LEARNER: " : "COUNTERPART: ") + m.content).join("\n");
+    try {
+      const r = await AI.json(COACH + "\n\nThis is a transcript of a practice meeting. Lines marked LEARNER are the learner.\n\n" + script +
+        '\n\nReply with ONLY a JSON object: {"ko":"한국어 3~4문장 총평: 내용 전달과 영어 표현", "fixes":[{"from":"their wording","to":"better wording"}], "phrases":["expression they should have used"]}. At most 3 fixes and 3 phrases.',
+        { modelTier: "default" });
+      $("#out").innerHTML =
+        '<div class="fb ok" style="margin-top:12px">' + esc(r.ko || "") + "</div>" +
+        ((r.fixes || []).length ? '<div class="eyebrow" style="margin-top:14px">표현 교정</div><div>' +
+          r.fixes.slice(0,3).map(f => '<div class="fix"><s>' + esc(f.from) + "</s><b>→ " + esc(f.to) + "</b></div>").join("") + "</div>" : "") +
+        ((r.phrases || []).length ? '<div class="eyebrow" style="margin-top:14px">이럴 때 쓰는 표현</div><div class="phrase-list">' +
+          r.phrases.slice(0,3).map(t => '<div class="phrase-item"><button data-say="' + esc(t) + '" aria-label="듣기">▶</button><span>' + esc(t) + "</span>" +
+            '<button class="btn ghost" data-save="' + esc(t) + '" data-ko="" data-kind="회의 표현" style="margin-left:auto">저장</button></div>').join("") + "</div>" : "") +
+        '<button class="btn primary wide" id="next" style="margin-top:14px">다음 →</button>';
+      $("#next").onclick = nextDrill;
+    } catch(err) {
+      const m = aiErrMsg(err);
+      $("#out").innerHTML = '<div class="fb warn" style="margin-top:12px">' + esc(m || "피드백을 받지 못했습니다.") + "</div>" +
+        '<button class="btn primary wide" id="next" style="margin-top:12px">다음 →</button>';
+      $("#next").onclick = nextDrill;
+    }
+  };
+}
+
+/* ═══════════════ 설치 / 오프라인 캐시 ═══════════════ */
+function initPWA(){
+  /* https 로 열렸을 때만 등록된다. file:// 로 열면 조용히 건너뛴다. */
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
+  const btn = $("#installBtn");
+  let deferred = null;
+  window.addEventListener("beforeinstallprompt", e => {
+    e.preventDefault(); deferred = e;
+    if (btn) btn.hidden = false;
+  });
+  if (btn) btn.onclick = async () => {
+    if (!deferred) return;
+    btn.hidden = true;
+    try { deferred.prompt(); await deferred.userChoice; } catch(e){}
+    deferred = null;
+  };
+  window.addEventListener("appinstalled", () => { if (btn) btn.hidden = true; });
+}
+
+/* ═══════════════ init ═══════════════ */
+initAI(); initDB(); initOffline(); initPWA(); paintStats(); show("setup");
+</script>
+
+</body>
+</html>
