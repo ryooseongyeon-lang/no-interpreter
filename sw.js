@@ -1,5 +1,5 @@
-/* No Interpreter - offline cache. build: 4d2bd1bdb5 */
-const V = "no-interpreter-4d2bd1bdb5";
+/* No Interpreter - offline cache. build: dc5a6c5189 */
+const V = "no-interpreter-dc5a6c5189";
 const CORE = ["./", "./index.html", "./manifest.webmanifest",
               "./icon-192.png", "./icon-512.png", "./icon-maskable-512.png"];
 

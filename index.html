@@ -218,6 +218,7 @@ textarea{resize:vertical;min-height:92px;line-height:1.5}
     </div>
 
     <button class="btn primary big wide" id="startBtn">세션 시작</button>
+    <button class="btn" id="streamBtn">계속 듣기 &middot; 받아쓰기 없이</button>
     <button class="btn ghost" id="notesBtn">복습 노트 열기</button>
     <button class="btn ghost" id="installBtn" hidden>홈 화면에 앱으로 설치</button>
     <p class="hint center" id="aiState">연결 확인 중…</p>
@@ -239,6 +240,49 @@ textarea{resize:vertical;min-height:92px;line-height:1.5}
 
   <!-- ══ DEBRIEF ════════════════════════════ -->
   <section id="debrief" hidden class="stack"></section>
+
+
+  <!-- ══ STREAM (계속 듣기) ═════════════════ -->
+  <section id="stream" hidden class="stack">
+    <div class="hero">
+      <h1>계속 듣기</h1>
+      <p>받아쓰지 않아도 됩니다. 종료를 누를 때까지 문장이 이어집니다.</p>
+    </div>
+
+    <div class="card stack-s">
+      <div class="eyebrow">무엇을 들을까요</div>
+      <div class="chips" id="srcChips"></div>
+      <p class="hint" id="srcHint"></p>
+    </div>
+
+    <div class="card stack-s">
+      <div class="eyebrow">한 문장 반복</div>
+      <div class="chips" id="repChips"></div>
+      <div class="eyebrow" style="margin-top:6px">문장 사이 간격</div>
+      <div class="chips" id="gapChips"></div>
+      <div class="eyebrow" style="margin-top:6px">속도</div>
+      <div class="chips" id="sRateChips"></div>
+    </div>
+
+    <div class="card stack-s">
+      <div class="eyebrow">화면에 보일 것</div>
+      <div class="chips" id="showChips"></div>
+      <p class="hint">아무것도 켜지 않으면 소리만 나옵니다. 화면을 보지 않고 들을 때 쓰세요.</p>
+    </div>
+
+    <div class="card stack-s" id="nowCard">
+      <div class="eyebrow"><span class="mono" id="stCount">0</span>번째 &middot; <span id="stSrcNow">&mdash;</span></div>
+      <p class="en-big" id="stEn">재생을 누르면 시작합니다.</p>
+      <p class="ko" id="stKo" hidden></p>
+    </div>
+
+    <button class="btn primary big wide" id="stPlay">재생</button>
+    <div class="row-wrap">
+      <button class="btn quiet" id="stPrevRep" style="flex:1">한 번 더</button>
+      <button class="btn quiet" id="stNext" style="flex:1">다음 문장</button>
+    </div>
+    <button class="btn ghost" id="stBack">처음 화면으로</button>
+  </section>
 
   <!-- ══ NOTES ══════════════════════════════ -->
   <section id="notes" hidden class="stack"></section>
@@ -782,7 +826,7 @@ $("#notesBtn").addEventListener("click", showNotes);
 
 /* ═══════════════ screens ═══════════════ */
 function show(id){
-  ["setup","session","debrief","notes"].forEach(k => { $("#" + k).hidden = (k !== id); });
+  ["setup","session","debrief","notes","stream"].forEach(k => { $("#" + k).hidden = (k !== id); });
   $("#dock").hidden = (id !== "session");
   window.scrollTo(0, 0);
 }
@@ -892,6 +936,9 @@ $("#notes").addEventListener("click", e => {
 .count{font-family:var(--mono);font-size:22px;font-weight:500;font-variant-numeric:tabular-nums}
 .count.done{color:var(--flag)}
 .keys{background:var(--surface-2);border-radius:var(--r);padding:10px 12px}
+.en-big{font-family:var(--serif);font-size:19px;line-height:1.5;color:var(--ink)}
+#nowCard{min-height:150px}
+#nowCard.on{border-color:var(--accent)}
 </style>
 <script>
 /* ═══════════════ 반복 재생 ═══════════════ */
@@ -1335,6 +1382,152 @@ function endRole(){
     }
   };
 }
+
+/* ═══════════════ 계속 듣기 ═══════════════ */
+const STREAM = {
+  on: false, src: "all", rep: 1, gap: 1.5, rate: 0.95,
+  showEn: true, showKo: false,
+  count: 0, startedAt: 0, minutes: 0, q: [], cur: null, voice: null, token: 0
+};
+
+/* 재생 목록 — 기존 드릴 자료를 그대로 쓴다 */
+const SRC_DEFS = [
+  ["all",     "전부 섞어서", "아래 네 가지를 모두 섞습니다."],
+  ["meeting", "회의 문장",   "회의에서 실제로 들리는 문장 전체입니다."],
+  ["numbers", "숫자·조항",   "숫자·조항·문서번호가 들어간 문장만 나옵니다."],
+  ["asked",   "받는 질문",   "NB·동료가 던지는 질문만 나옵니다."],
+  ["phrase",  "표현",        "상황별로 쓰는 짧은 표현만 나옵니다."]
+];
+
+function streamItems(kind){
+  const out = [];
+  if (kind === "all" || kind === "meeting") DICTATION.forEach(d => out.push({en:d.en, ko:d.ko, tag:d.st}));
+  if (kind === "all" || kind === "numbers") DETAIL.forEach(d => out.push({en:d.say, ko:d.ask + "  →  " + d.ans, tag:"숫자·조항"}));
+  if (kind === "all" || kind === "asked")   QA.forEach(d => out.push({en:d.q, ko:d.ko, tag:"받는 질문"}));
+  if (kind === "all" || kind === "phrase")  PHRASES.forEach(g => g.items.forEach(t => out.push({en:t, ko:g.cat, tag:"표현"})));
+  return out;
+}
+
+function streamNext(){
+  if (!STREAM.q.length) STREAM.q = shuffle(streamItems(STREAM.src));
+  return STREAM.q.pop() || null;
+}
+
+function paintStreamChips(){
+  $("#srcChips").innerHTML = SRC_DEFS.map(d =>
+    '<button class="chip" aria-pressed="' + (STREAM.src === d[0]) + '" data-src="' + d[0] + '">' + d[1] + "</button>").join("");
+  const def = SRC_DEFS.find(d => d[0] === STREAM.src);
+  $("#srcHint").textContent = def ? def[2] + "  (문장 " + streamItems(STREAM.src).length + "개)" : "";
+  $("#repChips").innerHTML = [1,2,3].map(n =>
+    '<button class="chip" aria-pressed="' + (STREAM.rep === n) + '" data-rep="' + n + '">' + n + "번</button>").join("");
+  $("#gapChips").innerHTML = [["0.4","바로"],["1.5","한 박자"],["3","천천히"],["6","따라 말할 시간"]].map(g =>
+    '<button class="chip" aria-pressed="' + (String(STREAM.gap) === g[0]) + '" data-gap="' + g[0] + '">' + g[1] + "</button>").join("");
+  $("#sRateChips").innerHTML = RATES.map(r =>
+    '<button class="chip" aria-pressed="' + (String(STREAM.rate) === r[0]) + '" data-srate="' + r[0] + '">' + r[1] + "</button>").join("");
+  $("#showChips").innerHTML =
+    '<button class="chip" aria-pressed="' + STREAM.showEn + '" data-show="en">영어 문장</button>' +
+    '<button class="chip" aria-pressed="' + STREAM.showKo + '" data-show="ko">한국어 뜻</button>';
+}
+
+function paintStreamNow(){
+  const it = STREAM.cur;
+  $("#stCount").textContent = STREAM.count;
+  $("#stSrcNow").textContent = it ? it.tag : "—";
+  const en = $("#stEn"), ko = $("#stKo");
+  if (!it) { en.textContent = "재생을 누르면 시작합니다."; ko.hidden = true; return; }
+  en.textContent = STREAM.showEn ? it.en : "· · ·";
+  ko.hidden = !STREAM.showKo;
+  ko.textContent = it.ko || "";
+}
+
+async function streamLoop(){
+  const my = ++STREAM.token;
+  while (STREAM.on && my === STREAM.token) {
+    const it = streamNext();
+    if (!it) { streamStop(); return; }
+    STREAM.cur = it; STREAM.count++;
+    paintStreamNow();
+    for (let r = 0; r < STREAM.rep; r++) {
+      if (!STREAM.on || my !== STREAM.token) return;
+      await TTS.speak(it.en, { voice: STREAM.voice, rate: STREAM.rate, el: $("#nowCard") });
+      if (r < STREAM.rep - 1) await new Promise(r2 => setTimeout(r2, 500));
+    }
+    if (!STREAM.on || my !== STREAM.token) return;
+    await new Promise(r2 => setTimeout(r2, STREAM.gap * 1000));
+  }
+}
+
+function streamStart(){
+  if (STREAM.on) return;
+  STREAM.on = true;
+  STREAM.startedAt = Date.now();
+  STREAM.voice = TTS.pick();
+  TTS.unlock(); wake();
+  $("#stPlay").textContent = "일시정지";
+  $("#stPlay").classList.add("listening");
+  streamLoop();
+}
+
+function streamPause(){
+  if (!STREAM.on) return;
+  STREAM.on = false; STREAM.token++;
+  TTS.stop();
+  if (STREAM.startedAt) { STREAM.minutes += (Date.now() - STREAM.startedAt) / 60000; STREAM.startedAt = 0; }
+  $("#stPlay").textContent = "이어서 재생";
+  $("#stPlay").classList.remove("listening");
+  $("#nowCard").classList.remove("speaking");
+}
+
+function streamStop(){
+  streamPause();
+  const mins = Math.round(STREAM.minutes);
+  if (mins >= 1) {
+    P.totalMin += mins;
+    if (!P.days.includes(today())) P.days.push(today());
+    saveProgress(); paintStats();
+  }
+  STREAM.minutes = 0; STREAM.count = 0; STREAM.cur = null; STREAM.q = [];
+  paintStreamNow();
+}
+
+/* 화면을 끄거나 다른 앱으로 가면 안드로이드가 TTS 를 끊는다. 돌아오면 이어서 재생한다. */
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && STREAM.on) { wake(); streamLoop(); }
+});
+
+$("#streamBtn").addEventListener("click", () => { paintStreamChips(); paintStreamNow(); show("stream"); });
+$("#stBack").addEventListener("click", () => { streamStop(); show("setup"); });
+$("#stPlay").addEventListener("click", () => { STREAM.on ? streamPause() : streamStart(); });
+$("#stNext").addEventListener("click", () => {
+  TTS.stop();
+  if (!STREAM.on) { STREAM.cur = streamNext(); STREAM.count++; paintStreamNow(); TTS.unlock(); TTS.speak(STREAM.cur.en, { voice: STREAM.voice || TTS.pick(), rate: STREAM.rate, el: $("#nowCard") }); }
+});
+$("#stPrevRep").addEventListener("click", () => {
+  if (!STREAM.cur) return;
+  TTS.stop(); TTS.unlock();
+  TTS.speak(STREAM.cur.en, { voice: STREAM.voice || TTS.pick(), rate: STREAM.rate, el: $("#nowCard") });
+});
+$("#srcChips").addEventListener("click", e => {
+  const b = e.target.closest("[data-src]"); if (!b) return;
+  STREAM.src = b.dataset.src; STREAM.q = []; paintStreamChips();
+});
+$("#repChips").addEventListener("click", e => {
+  const b = e.target.closest("[data-rep]"); if (!b) return;
+  STREAM.rep = +b.dataset.rep; paintStreamChips();
+});
+$("#gapChips").addEventListener("click", e => {
+  const b = e.target.closest("[data-gap]"); if (!b) return;
+  STREAM.gap = +b.dataset.gap; paintStreamChips();
+});
+$("#sRateChips").addEventListener("click", e => {
+  const b = e.target.closest("[data-srate]"); if (!b) return;
+  STREAM.rate = +b.dataset.srate; paintStreamChips();
+});
+$("#showChips").addEventListener("click", e => {
+  const b = e.target.closest("[data-show]"); if (!b) return;
+  if (b.dataset.show === "en") STREAM.showEn = !STREAM.showEn; else STREAM.showKo = !STREAM.showKo;
+  paintStreamChips(); paintStreamNow();
+});
 
 /* ═══════════════ 설치 / 오프라인 캐시 ═══════════════ */
 function initPWA(){
